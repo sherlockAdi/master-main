@@ -1,18 +1,19 @@
 import React from 'react';
 import Sidebar from './Sidebar';
-import '../main.css';
+import Header from './Header';
 
 const Layout = ({ children }) => {
     return (
-        <div className="layout-root">
-            <header className="main-header">
-                <div className="header-logo">M</div>
-                <div className="header-title">Master CRUD Application</div>
-            </header>
-            <Sidebar />
-            <main className="main-content">
-                {children}
-            </main>
+        <div className="min-h-screen bg-gray-50">
+            <Header />
+            <div className="flex h-screen">
+                <Sidebar />
+                <main className="flex-1 overflow-y-auto h-screen m-5">
+                    <div className="max-w-7xl mx-auto">
+                        {children}
+                    </div>
+                </main>
+            </div>
         </div>
     );
 };

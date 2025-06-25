@@ -1,0 +1,312 @@
+import React, { useState, useEffect } from 'react';
+import { Plus, Search, Edit, Trash2 } from 'lucide-react';
+import stateService from '../../services/stateService';
+import countryService from '../../services/countryService';
+
+interface State {
+  stateid: number;
+  state: string;
+  conid: number;
+  status: boolean;
+  archive: boolean;
+}
+
+interface Country {
+  conid: number;
+  country: string;
+}
+
+const StatesPage: React.FC = () => {
+  const [states, setStates] = useState<State[]>([]);
+  const [countries, setCountries] = useState<Country[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [showModal, setShowModal] = useState(false);
+  const [currentState, setCurrentState] = useState<State | null>(null);
+  const [formData, setFormData] = useState({ conid: '', state: '', status: true, archive: false });
+  const [searchTerm, setSearchTerm] = useState('');
+  const [filterCountryId, setFilterCountryId] = useState('');
+
+  useEffect(() => {
+    loadData();
+  }, []);
+
+  const loadData = async () => {
+    setLoading(true);
+    try {
+      const [stateRes, countryRes] = await Promise.all([
+        stateService.getAllStates(),
+        countryService.getAllCountries()
+      ]);
+      setStates(stateRes.data || []);
+      setCountries(countryRes.data || []);
+    } catch (error) {
+      console.error('Error loading data:', error);
+      setStates([]);
+      setCountries([]);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleOpen = (state: State | null = null) => {
+    setCurrentState(state);
+    if (state) {
+      setFormData({ conid: state.conid.toString(), state: state.state, status: state.status, archive: state.archive });
+    } else {
+      setFormData({ conid: '', state: '', status: true, archive: false });
+    }
+    setShowModal(true);
+  };
+
+  const handleClose = () => {
+    setShowModal(false);
+    setCurrentState(null);
+  };
+
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
+    const { name, value, type } = e.target;
+    const checked = (e.target as HTMLInputElement).checked;
+    setFormData(prev => ({ ...prev, [name]: type === 'checkbox' ? checked : value }));
+  };
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    try {
+      const submitData = { ...formData, conid: parseInt(formData.conid) };
+      if (currentState) {
+        await stateService.updateState(currentState.stateid, submitData);
+      } else {
+        await stateService.createState(submitData);
+      }
+      loadData();
+      handleClose();
+    } catch (error) {
+      console.error('Error saving state:', error);
+    }
+  };
+
+  const handleDelete = async (id: number) => {
+    if (window.confirm('Are you sure you want to delete this state?')) {
+      try {
+        await stateService.deleteState(id);
+        loadData();
+      } catch (error) {
+        console.error('Error deleting state:', error);
+      }
+    }
+  };
+
+  const getCountryName = (conid: number) => {
+    const country = countries.find(c => c.conid === conid);
+    return country ? country.country : 'Unknown';
+  };
+
+  const filteredStates = states.filter(state => {
+    const matchesSearch = state.state.toLowerCase().includes(searchTerm.toLowerCase());
+    const matchesCountry = filterCountryId === '' || state.conid === parseInt(filterCountryId);
+    return matchesSearch && matchesCountry;
+  });
+
+  return (
+    <div className="space-y-6">
+      {/* Header */}
+      <div className="bg-white rounded-lg shadow-sm p-6">
+        <div className="flex justify-between items-center">
+          <div>
+            <h1 className="text-2xl font-bold text-gray-900">States</h1>
+            <p className="text-gray-600 mt-1">Manage state master data</p>
+          </div>
+          <button
+            onClick={() => handleOpen()}
+            className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg flex items-center space-x-2 transition-colors"
+          >
+            <Plus size={20} />
+            <span>Add State</span>
+          </button>
+        </div>
+      </div>
+
+      {/* Filters */}
+      <div className="bg-white rounded-lg shadow-sm p-4">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div className="relative">
+            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" size={20} />
+            <input
+              type="text"
+              placeholder="Search states..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+            />
+          </div>
+          <select
+            value={filterCountryId}
+            onChange={(e) => setFilterCountryId(e.target.value)}
+            className="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+          >
+            <option value="">All Countries</option>
+            {countries.map((country) => (
+              <option key={country.conid} value={country.conid}>
+                {country.country}
+              </option>
+            ))}
+          </select>
+        </div>
+      </div>
+
+      {/* Table */}
+      <div className="bg-white rounded-lg shadow-sm">
+        {loading ? (
+          <div className="p-12 text-center">
+            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto"></div>
+            <p className="text-gray-600 mt-4">Loading states...</p>
+          </div>
+        ) : (
+          <div className="overflow-x-auto">
+            <table className="w-full">
+              <thead className="bg-gray-50 border-b border-gray-200">
+                <tr>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">ID</th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">State</th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Country</th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Archive</th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
+                </tr>
+              </thead>
+              <tbody className="bg-white divide-y divide-gray-200">
+                {filteredStates.length === 0 ? (
+                  <tr>
+                    <td colSpan={6} className="px-6 py-12 text-center text-gray-500">
+                      No states found
+                    </td>
+                  </tr>
+                ) : (
+                  filteredStates.map((state) => (
+                    <tr key={state.stateid} className="hover:bg-gray-50">
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{state.stateid}</td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">{state.state}</td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{getCountryName(state.conid)}</td>
+                      <td className="px-6 py-4 whitespace-nowrap">
+                        <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${state.status ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}`}>
+                          {state.status ? 'Active' : 'Inactive'}
+                        </span>
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap">
+                        <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${state.archive ? 'bg-yellow-100 text-yellow-800' : 'bg-gray-100 text-gray-800'}`}>
+                          {state.archive ? 'Yes' : 'No'}
+                        </span>
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                        <div className="flex space-x-2">
+                          <button
+                            onClick={() => handleOpen(state)}
+                            className="text-blue-600 hover:text-blue-900 p-1 rounded"
+                            title="Edit"
+                          >
+                            <Edit size={16} />
+                          </button>
+                          <button
+                            onClick={() => handleDelete(state.stateid)}
+                            className="text-red-600 hover:text-red-900 p-1 rounded"
+                            title="Delete"
+                          >
+                            <Trash2 size={16} />
+                          </button>
+                        </div>
+                      </td>
+                    </tr>
+                  ))
+                )}
+              </tbody>
+            </table>
+          </div>
+        )}
+      </div>
+
+      {/* Modal */}
+      {showModal && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white rounded-lg p-6 w-full max-w-md mx-4">
+            <h3 className="text-lg font-semibold text-gray-900 mb-4">
+              {currentState ? 'Edit State' : 'Add State'}
+            </h3>
+            <form onSubmit={handleSubmit} className="space-y-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  State Name
+                </label>
+                <input
+                  type="text"
+                  name="state"
+                  value={formData.state}
+                  onChange={handleChange}
+                  required
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Country
+                </label>
+                <select
+                  name="conid"
+                  value={formData.conid}
+                  onChange={handleChange}
+                  required
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                >
+                  <option value="">Select Country</option>
+                  {countries.map((country) => (
+                    <option key={country.conid} value={country.conid}>
+                      {country.country}
+                    </option>
+                  ))}
+                </select>
+              </div>
+              <div className="flex space-x-4">
+                <label className="flex items-center">
+                  <input
+                    type="checkbox"
+                    name="status"
+                    checked={formData.status}
+                    onChange={handleChange}
+                    className="mr-2"
+                  />
+                  <span className="text-sm text-gray-700">Active</span>
+                </label>
+                <label className="flex items-center">
+                  <input
+                    type="checkbox"
+                    name="archive"
+                    checked={formData.archive}
+                    onChange={handleChange}
+                    className="mr-2"
+                  />
+                  <span className="text-sm text-gray-700">Archive</span>
+                </label>
+              </div>
+              <div className="flex justify-end space-x-3 pt-4">
+                <button
+                  type="button"
+                  onClick={handleClose}
+                  className="px-4 py-2 text-gray-700 bg-gray-200 rounded-lg hover:bg-gray-300 transition-colors"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+                >
+                  Save
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+};
+
+export default StatesPage;
