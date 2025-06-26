@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Plus, Search, Edit, Trash2 } from 'lucide-react';
 import stateService from '../../services/stateService';
 import countryService from '../../services/countryService';
+import cityService from '../../services/cityService'; // New import
 
 interface State {
   stateid: number;
@@ -16,9 +17,15 @@ interface Country {
   country: string;
 }
 
+interface City {
+  cityid: number;
+  stateid: number;
+}
+
 const StatesPage: React.FC = () => {
   const [states, setStates] = useState<State[]>([]);
   const [countries, setCountries] = useState<Country[]>([]);
+  const [cities, setCities] = useState<City[]>([]); // New state
   const [loading, setLoading] = useState(true);
   const [showModal, setShowModal] = useState(false);
   const [currentState, setCurrentState] = useState<State | null>(null);
@@ -33,16 +40,19 @@ const StatesPage: React.FC = () => {
   const loadData = async () => {
     setLoading(true);
     try {
-      const [stateRes, countryRes] = await Promise.all([
+      const [stateRes, countryRes, cityRes] = await Promise.all([
         stateService.getAllStates(),
-        countryService.getAllCountries()
+        countryService.getAllCountries(),
+        cityService.getAllCities() // Fetch cities
       ]);
       setStates(stateRes.data || []);
       setCountries(countryRes.data || []);
+      setCities(cityRes.data || []); // Set cities
     } catch (error) {
       console.error('Error loading data:', error);
       setStates([]);
       setCountries([]);
+      setCities([]);
     } finally {
       setLoading(false);
     }
@@ -99,6 +109,10 @@ const StatesPage: React.FC = () => {
   const getCountryName = (conid: number) => {
     const country = countries.find(c => c.conid === conid);
     return country ? country.country : 'Unknown';
+  };
+
+  const hasCities = (stateid: number) => {
+    return cities.some(city => city.stateid === stateid);
   };
 
   const filteredStates = states.filter(state => {
@@ -182,41 +196,45 @@ const StatesPage: React.FC = () => {
                     </td>
                   </tr>
                 ) : (
-                  filteredStates.map((state) => (
-                    <tr key={state.stateid} className="hover:bg-gray-50">
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{state.stateid}</td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">{state.state}</td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{getCountryName(state.conid)}</td>
-                      <td className="px-6 py-4 whitespace-nowrap">
-                        <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${state.status ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}`}>
-                          {state.status ? 'Active' : 'Inactive'}
-                        </span>
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap">
-                        <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${state.archive ? 'bg-yellow-100 text-yellow-800' : 'bg-gray-100 text-gray-800'}`}>
-                          {state.archive ? 'Yes' : 'No'}
-                        </span>
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                        <div className="flex space-x-2">
-                          <button
-                            onClick={() => handleOpen(state)}
-                            className="text-blue-600 hover:text-blue-900 p-1 rounded"
-                            title="Edit"
-                          >
-                            <Edit size={16} />
-                          </button>
-                          <button
-                            onClick={() => handleDelete(state.stateid)}
-                            className="text-red-600 hover:text-red-900 p-1 rounded"
-                            title="Delete"
-                          >
-                            <Trash2 size={16} />
-                          </button>
-                        </div>
-                      </td>
-                    </tr>
-                  ))
+                  filteredStates.map((state) => {
+                    const disabled = hasCities(state.stateid);
+                    return (
+                      <tr key={state.stateid} className="hover:bg-gray-50">
+                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{state.stateid}</td>
+                        <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">{state.state}</td>
+                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{getCountryName(state.conid)}</td>
+                        <td className="px-6 py-4 whitespace-nowrap">
+                          <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${state.status ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}`}>
+                            {state.status ? 'Active' : 'Inactive'}
+                          </span>
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap">
+                          <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${state.archive ? 'bg-yellow-100 text-yellow-800' : 'bg-gray-100 text-gray-800'}`}>
+                            {state.archive ? 'Yes' : 'No'}
+                          </span>
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                          <div className="flex space-x-2">
+                            <button
+                              onClick={() => handleOpen(state)}
+                              className="text-blue-600 hover:text-blue-900 p-1 rounded"
+                              title="Edit"
+                            >
+                              <Edit size={16} />
+                            </button>
+                            <button
+                              onClick={() => !disabled && handleDelete(state.stateid)}
+                              disabled={disabled}
+                              className={`p-1 rounded ${disabled ? 'text-gray-400 cursor-not-allowed' : 'text-red-600 hover:text-red-900'}`}
+                              title={disabled ? 'Cannot delete - has cities' : 'Delete'}
+                            >
+                              <Trash2 size={16} />
+                            </button>
+                          </div>
+                        </td>
+                      </tr>
+                    );
+                  })
                 )}
               </tbody>
             </table>
@@ -233,9 +251,7 @@ const StatesPage: React.FC = () => {
             </h3>
             <form onSubmit={handleSubmit} className="space-y-4">
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  State Name
-                </label>
+                <label className="block text-sm font-medium text-gray-700 mb-1">State Name</label>
                 <input
                   type="text"
                   name="state"
@@ -246,9 +262,7 @@ const StatesPage: React.FC = () => {
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Country
-                </label>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Country</label>
                 <select
                   name="conid"
                   value={formData.conid}
@@ -266,38 +280,19 @@ const StatesPage: React.FC = () => {
               </div>
               <div className="flex space-x-4">
                 <label className="flex items-center">
-                  <input
-                    type="checkbox"
-                    name="status"
-                    checked={formData.status}
-                    onChange={handleChange}
-                    className="mr-2"
-                  />
+                  <input type="checkbox" name="status" checked={formData.status} onChange={handleChange} className="mr-2" />
                   <span className="text-sm text-gray-700">Active</span>
                 </label>
                 <label className="flex items-center">
-                  <input
-                    type="checkbox"
-                    name="archive"
-                    checked={formData.archive}
-                    onChange={handleChange}
-                    className="mr-2"
-                  />
+                  <input type="checkbox" name="archive" checked={formData.archive} onChange={handleChange} className="mr-2" />
                   <span className="text-sm text-gray-700">Archive</span>
                 </label>
               </div>
               <div className="flex justify-end space-x-3 pt-4">
-                <button
-                  type="button"
-                  onClick={handleClose}
-                  className="px-4 py-2 text-gray-700 bg-gray-200 rounded-lg hover:bg-gray-300 transition-colors"
-                >
+                <button type="button" onClick={handleClose} className="px-4 py-2 text-gray-700 bg-gray-200 rounded-lg hover:bg-gray-300">
                   Cancel
                 </button>
-                <button
-                  type="submit"
-                  className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
-                >
+                <button type="submit" className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700">
                   Save
                 </button>
               </div>

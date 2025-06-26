@@ -2,19 +2,19 @@ import apiService from './api';
 
 class CollegeService {
   async getAllColleges() {
-    return apiService.get('/master/colleges');
+    return apiService.get('/api/colleges');
   }
 
   async createCollege(data: any) {
-    return apiService.post('/master/colleges', data);
+    return apiService.post('/api/colleges', data);
   }
 
   async updateCollege(id: number, data: any) {
-    return apiService.put(`/master/colleges/${id}`, data);
+    return apiService.put(`/api/colleges/${id}`, data);
   }
 
   async deleteCollege(id: number) {
-    return apiService.delete(`/master/colleges/${id}`);
+    return apiService.delete(`/api/colleges/${id}`);
   }
 }
 

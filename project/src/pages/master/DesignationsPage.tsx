@@ -25,11 +25,11 @@ const DesignationsPage: React.FC = () => {
   const [loading, setLoading] = useState(true);
   const [showModal, setShowModal] = useState(false);
   const [currentDesignation, setCurrentDesignation] = useState<Designation | null>(null);
-  const [formData, setFormData] = useState({ 
+  const [formData, setFormData] = useState({
     Desgname: '',
     shortname: '',
     departmentid: '',
-    status: true, 
+    status: true,
     archive: false,
     gradeid: ''
   });
@@ -61,20 +61,20 @@ const DesignationsPage: React.FC = () => {
   const handleOpen = (designation: Designation | null = null) => {
     setCurrentDesignation(designation);
     if (designation) {
-      setFormData({ 
+      setFormData({
         Desgname: designation.Desgname,
         shortname: designation.shortname,
         departmentid: designation.departmentid.toString(),
-        status: designation.status, 
+        status: designation.status,
         archive: designation.archive,
         gradeid: designation.gradeid?.toString() || ''
       });
     } else {
-      setFormData({ 
+      setFormData({
         Desgname: '',
         shortname: '',
         departmentid: '',
-        status: true, 
+        status: true,
         archive: false,
         gradeid: ''
       });
@@ -96,8 +96,8 @@ const DesignationsPage: React.FC = () => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
-      const submitData = { 
-        ...formData, 
+      const submitData = {
+        ...formData,
         departmentid: parseInt(formData.departmentid),
         gradeid: formData.gradeid ? parseInt(formData.gradeid) : undefined
       };
@@ -131,7 +131,7 @@ const DesignationsPage: React.FC = () => {
 
   const filteredDesignations = designations.filter(designation => {
     const matchesSearch = designation.Desgname.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         designation.shortname.toLowerCase().includes(searchTerm.toLowerCase());
+      designation.shortname.toLowerCase().includes(searchTerm.toLowerCase());
     const matchesDepartment = filterDepartmentId === '' || designation.departmentid === parseInt(filterDepartmentId);
     return matchesSearch && matchesDepartment;
   });

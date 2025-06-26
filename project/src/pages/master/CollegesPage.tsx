@@ -22,10 +22,10 @@ const CollegesPage: React.FC = () => {
   const [loading, setLoading] = useState(true);
   const [showModal, setShowModal] = useState(false);
   const [currentCollege, setCurrentCollege] = useState<College | null>(null);
-  const [formData, setFormData] = useState({ 
+  const [formData, setFormData] = useState({
     collegename: '',
     shortname: '',
-    status: true, 
+    status: true,
     archive: false,
     logourl: '',
     director: '',
@@ -56,10 +56,10 @@ const CollegesPage: React.FC = () => {
   const handleOpen = (college: College | null = null) => {
     setCurrentCollege(college);
     if (college) {
-      setFormData({ 
+      setFormData({
         collegename: college.collegename,
         shortname: college.shortname,
-        status: college.status, 
+        status: college.status,
         archive: college.archive,
         logourl: college.logourl || '',
         director: college.director || '',
@@ -69,10 +69,10 @@ const CollegesPage: React.FC = () => {
         service_tax_no: college.service_tax_no || ''
       });
     } else {
-      setFormData({ 
+      setFormData({
         collegename: '',
         shortname: '',
-        status: true, 
+        status: true,
         archive: false,
         logourl: '',
         director: '',

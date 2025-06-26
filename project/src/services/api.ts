@@ -1,4 +1,4 @@
-const API_BASE_URL = 'http://localhost:5000';
+const API_BASE_URL = 'http://localhost:5999';
 
 class ApiService {
   async request(endpoint: string, options: RequestInit = {}) {
@@ -13,9 +13,10 @@ class ApiService {
 
     try {
       const response = await fetch(url, config);
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
-      }
+      console.log(response)
+      // if (response.status != 200) {
+      //   throw new Error(`HTTP error! status: ${response}`);
+      // }
       return await response.json();
     } catch (error) {
       console.error('API request failed:', error);

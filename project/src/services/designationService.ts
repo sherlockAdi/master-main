@@ -2,19 +2,19 @@ import apiService from './api';
 
 class DesignationService {
   async getAllDesignations() {
-    return apiService.get('/master/designations');
+    return apiService.get('/api/designations');
   }
 
   async createDesignation(data: any) {
-    return apiService.post('/master/designations', data);
+    return apiService.post('/api/designations', data);
   }
 
   async updateDesignation(id: number, data: any) {
-    return apiService.put(`/master/designations/${id}`, data);
+    return apiService.put(`/api/designations/${id}`, data);
   }
 
   async deleteDesignation(id: number) {
-    return apiService.delete(`/master/designations/${id}`);
+    return apiService.delete(`/api/designations/${id}`);
   }
 }
 

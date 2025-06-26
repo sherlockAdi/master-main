@@ -25,10 +25,10 @@ const CitiesPage: React.FC = () => {
   const [loading, setLoading] = useState(true);
   const [showModal, setShowModal] = useState(false);
   const [currentCity, setCurrentCity] = useState<City | null>(null);
-  const [formData, setFormData] = useState({ 
-    stateid: '', 
-    city: '', 
-    status: true, 
+  const [formData, setFormData] = useState({
+    stateid: '',
+    city: '',
+    status: true,
     archive: false,
     fyid: '',
     target: '',
@@ -62,20 +62,20 @@ const CitiesPage: React.FC = () => {
   const handleOpen = (city: City | null = null) => {
     setCurrentCity(city);
     if (city) {
-      setFormData({ 
-        stateid: city.stateid.toString(), 
-        city: city.city, 
-        status: city.status, 
+      setFormData({
+        stateid: city.stateid.toString(),
+        city: city.city,
+        status: city.status,
         archive: city.archive,
         fyid: city.fyid?.toString() || '',
         target: city.target?.toString() || '',
         ATMDCode: city.ATMDCode || ''
       });
     } else {
-      setFormData({ 
-        stateid: '', 
-        city: '', 
-        status: true, 
+      setFormData({
+        stateid: '',
+        city: '',
+        status: true,
         archive: false,
         fyid: '',
         target: '',
@@ -99,8 +99,8 @@ const CitiesPage: React.FC = () => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
-      const submitData = { 
-        ...formData, 
+      const submitData = {
+        ...formData,
         stateid: parseInt(formData.stateid),
         fyid: formData.fyid ? parseInt(formData.fyid) : undefined,
         target: formData.target ? parseInt(formData.target) : undefined

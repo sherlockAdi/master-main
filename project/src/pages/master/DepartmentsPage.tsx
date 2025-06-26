@@ -18,10 +18,10 @@ const DepartmentsPage: React.FC = () => {
   const [loading, setLoading] = useState(true);
   const [showModal, setShowModal] = useState(false);
   const [currentDepartment, setCurrentDepartment] = useState<Department | null>(null);
-  const [formData, setFormData] = useState({ 
+  const [formData, setFormData] = useState({
     DeptName: '',
     shortname: '',
-    status: true, 
+    status: true,
     archive: false,
     showonwebsite: false,
     aboutdeptt: ''
@@ -48,19 +48,19 @@ const DepartmentsPage: React.FC = () => {
   const handleOpen = (department: Department | null = null) => {
     setCurrentDepartment(department);
     if (department) {
-      setFormData({ 
+      setFormData({
         DeptName: department.DeptName,
         shortname: department.shortname,
-        status: department.status, 
+        status: department.status,
         archive: department.archive,
         showonwebsite: department.showonwebsite,
         aboutdeptt: department.aboutdeptt
       });
     } else {
-      setFormData({ 
+      setFormData({
         DeptName: '',
         shortname: '',
-        status: true, 
+        status: true,
         archive: false,
         showonwebsite: false,
         aboutdeptt: ''

@@ -31,7 +31,7 @@ const BranchesPage: React.FC = () => {
   const [loading, setLoading] = useState(true);
   const [showModal, setShowModal] = useState(false);
   const [currentBranch, setCurrentBranch] = useState<Branch | null>(null);
-  const [formData, setFormData] = useState({ 
+  const [formData, setFormData] = useState({
     Branchname: '',
     shortname: '',
     collegeid: '',
@@ -41,7 +41,7 @@ const BranchesPage: React.FC = () => {
     Address: '',
     phoneNo: '',
     email: '',
-    status: true, 
+    status: true,
     archive: false,
     ATMBCode: ''
   });
@@ -73,7 +73,7 @@ const BranchesPage: React.FC = () => {
   const handleOpen = (branch: Branch | null = null) => {
     setCurrentBranch(branch);
     if (branch) {
-      setFormData({ 
+      setFormData({
         Branchname: branch.Branchname,
         shortname: branch.shortname,
         collegeid: branch.collegeid.toString(),
@@ -83,12 +83,12 @@ const BranchesPage: React.FC = () => {
         Address: branch.Address || '',
         phoneNo: branch.phoneNo || '',
         email: branch.email || '',
-        status: branch.status, 
+        status: branch.status,
         archive: branch.archive,
         ATMBCode: branch.ATMBCode || ''
       });
     } else {
-      setFormData({ 
+      setFormData({
         Branchname: '',
         shortname: '',
         collegeid: '',
@@ -98,7 +98,7 @@ const BranchesPage: React.FC = () => {
         Address: '',
         phoneNo: '',
         email: '',
-        status: true, 
+        status: true,
         archive: false,
         ATMBCode: ''
       });
@@ -151,8 +151,8 @@ const BranchesPage: React.FC = () => {
 
   const filteredBranches = branches.filter(branch => {
     const matchesSearch = branch.Branchname.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         branch.shortname.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         (branch.cityname && branch.cityname.toLowerCase().includes(searchTerm.toLowerCase()));
+      branch.shortname.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      (branch.cityname && branch.cityname.toLowerCase().includes(searchTerm.toLowerCase()));
     const matchesCollege = filterCollegeId === '' || branch.collegeid === parseInt(filterCollegeId);
     return matchesSearch && matchesCollege;
   });
@@ -251,7 +251,7 @@ const BranchesPage: React.FC = () => {
                       <td className="px-6 py-4 whitespace-nowrap">
                         <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${branch.archive ? 'bg-yellow-100 text-yellow-800' : 'bg-gray-100 text-gray-800'}`}>
                           {branch.archive ? 'Yes' : 'No'}
-                        
+
                         </span>
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">

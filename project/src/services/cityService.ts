@@ -2,19 +2,19 @@ import apiService from './api';
 
 class CityService {
   async getAllCities() {
-    return apiService.get('/master/address/cities');
+    return apiService.get('/api/cities');
   }
 
   async createCity(data: any) {
-    return apiService.post('/master/address/cities', data);
+    return apiService.post('/api/cities', data);
   }
 
   async updateCity(id: number, data: any) {
-    return apiService.put(`/master/address/cities/${id}`, data);
+    return apiService.put(`/api/cities/${id}`, data);
   }
 
   async deleteCity(id: number) {
-    return apiService.delete(`/master/address/cities/${id}`);
+    return apiService.delete(`/api/cities/${id}`);
   }
 }
 

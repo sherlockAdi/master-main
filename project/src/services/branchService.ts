@@ -2,19 +2,19 @@ import apiService from './api';
 
 class BranchService {
   async getAllBranches() {
-    return apiService.get('/master/branches');
+    return apiService.get('/api/branches');
   }
 
   async createBranch(data: any) {
-    return apiService.post('/master/branches', data);
+    return apiService.post('/api/branches', data);
   }
 
   async updateBranch(id: number, data: any) {
-    return apiService.put(`/master/branches/${id}`, data);
+    return apiService.put(`/api/branches/${id}`, data);
   }
 
   async deleteBranch(id: number) {
-    return apiService.delete(`/master/branches/${id}`);
+    return apiService.delete(`/api/branches/${id}`);
   }
 }
 
