@@ -5,6 +5,10 @@ class CityService {
     return apiService.get('/api/cities');
   }
 
+  async getAllCitiessum() {
+    return apiService.get('/api/cities/sum');
+  }
+
   async createCity(data: any) {
     return apiService.post('/api/cities', data);
   }

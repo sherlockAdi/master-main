@@ -5,7 +5,7 @@ const dbConfig = {
     password: 'Atm@12_34@56',
     server: '61.246.33.108',
     port: 5638,
-    database: 'beta_atmcoll1_COMM_U88',
+    database: 'beta_ATM_COMM_U88',
     options: {
         encrypt: false, // Use true for Azure SQL Database, or if you have an SSL certificate
         trustServerCertificate: true // Change to true for local dev / self-signed certs

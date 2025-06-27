@@ -9,6 +9,7 @@ import DepartmentsPage from './pages/master/DepartmentsPage';
 import DesignationsPage from './pages/master/DesignationsPage';
 import CollegesPage from './pages/master/CollegesPage';
 import BranchesPage from './pages/master/BranchesPage';
+import LocalitiesPage from './pages/master/LocalityPage';
 
 function App() {
   return (
@@ -17,6 +18,7 @@ function App() {
         <Routes>
           <Route path="/" element={<Dashboard />} />
           <Route path="/master/countries" element={<CountriesPage />} />
+          <Route path='/master/locality' element={<LocalitiesPage />} />
           <Route path="/master/states" element={<StatesPage />} />
           <Route path="/master/cities" element={<CitiesPage />} />
           <Route path="/master/departments" element={<DepartmentsPage />} />

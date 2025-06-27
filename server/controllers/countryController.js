@@ -4,7 +4,25 @@ const { getDB } = require('../database');
 const getAllCountries = async (req, res) => {
     try {
         const pool = getDB();
-        const result = await pool.request().query('SELECT * FROM [dbo].[ATM_Country]');
+        const result = await pool.request().query(`
+      SELECT 
+        c.conid,
+        c.country,
+        c.status,
+        c.archive,
+        (
+          SELECT COUNT(DISTINCT id)
+          FROM [dbo].[Atm_M_Branch88] b
+          WHERE b.countryname = c.conid
+        ) AS TotalBranches,
+        (
+          SELECT COUNT(DISTINCT sg.sid)
+          FROM [dbo].[Atm_T_StudentGurdianinfo88] sg
+          WHERE sg.fathercountry = c.conid
+        ) AS TotalStudents
+      FROM [dbo].[ATM_M_Country_U88] c
+    `);
+
         res.status(200).json({
             status: "success",
             data: result.recordset,
@@ -20,13 +38,14 @@ const getAllCountries = async (req, res) => {
     }
 };
 
+
 // Get country by ID
 const getCountryById = async (req, res) => {
     try {
         const pool = getDB();
         const result = await pool.request()
             .input('conid', req.params.id)
-            .query('SELECT * FROM [dbo].[ATM_Country] WHERE conid = @conid');
+            .query('SELECT * FROM [dbo].[ATM_M_Country_U88] WHERE conid = @conid');
 
         const country = result.recordset[0];
 
@@ -61,7 +80,7 @@ const createCountry = async (req, res) => {
             .input('country', country)
             .input('status', status)
             .input('archive', archive)
-            .query('INSERT INTO [dbo].[ATM_Country] (country, status, archive) VALUES (@country, @status, @archive)');
+            .query('INSERT INTO [dbo].[ATM_M_Country_U88] (country, status, archive) VALUES (@country, @status, @archive)');
 
         res.status(201).json({
             status: "success",
@@ -87,7 +106,7 @@ const updateCountry = async (req, res) => {
             .input('country', country)
             .input('status', status)
             .input('archive', archive)
-            .query('UPDATE [dbo].[ATM_Country] SET country = @country, status = @status, archive = @archive WHERE conid = @conid');
+            .query('UPDATE [dbo].[ATM_M_Country_U88] SET country = @country, status = @status, archive = @archive WHERE conid = @conid');
 
         res.status(200).json({
             status: "success",
@@ -110,7 +129,7 @@ const deleteCountry = async (req, res) => {
         const pool = getDB();
         await pool.request()
             .input('conid', req.params.id)
-            .query('DELETE FROM [dbo].[ATM_Country] WHERE conid = @conid');
+            .query('DELETE FROM [dbo].[ATM_M_Country_U88] WHERE conid = @conid');
 
         res.status(200).json({
             status: "success",

@@ -10,6 +10,9 @@ interface State {
   conid: number;
   status: boolean;
   archive: boolean;
+  TotalBranches: string;
+  TotalStudents: string;
+
 }
 
 interface Country {
@@ -41,7 +44,7 @@ const StatesPage: React.FC = () => {
     setLoading(true);
     try {
       const [stateRes, countryRes, cityRes] = await Promise.all([
-        stateService.getAllStates(),
+        stateService.getAllStatessuma(),
         countryService.getAllCountries(),
         cityService.getAllCities() // Fetch cities
       ]);
@@ -182,6 +185,8 @@ const StatesPage: React.FC = () => {
                 <tr>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">ID</th>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">State</th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Branch Count</th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Student Count </th>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Country</th>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Archive</th>
@@ -202,6 +207,8 @@ const StatesPage: React.FC = () => {
                       <tr key={state.stateid} className="hover:bg-gray-50">
                         <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{state.stateid}</td>
                         <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">{state.state}</td>
+                        <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">{state.TotalBranches}</td>
+                        <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">{state.TotalStudents}</td>
                         <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{getCountryName(state.conid)}</td>
                         <td className="px-6 py-4 whitespace-nowrap">
                           <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${state.status ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}`}>

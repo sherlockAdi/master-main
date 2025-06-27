@@ -12,6 +12,8 @@ interface City {
   fyid?: number;
   target?: number;
   ATMDCode?: string;
+  TotalStudents: string;
+  TotalBranches: string;
 }
 
 interface State {
@@ -45,7 +47,7 @@ const CitiesPage: React.FC = () => {
     setLoading(true);
     try {
       const [cityRes, stateRes] = await Promise.all([
-        cityService.getAllCities(),
+        cityService.getAllCitiessum(),
         stateService.getAllStates()
       ]);
       setCities(cityRes.data || []);
@@ -200,6 +202,8 @@ const CitiesPage: React.FC = () => {
                 <tr>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">ID</th>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">City</th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Branch Count</th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Student Count</th>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">State</th>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Code</th>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
@@ -219,6 +223,8 @@ const CitiesPage: React.FC = () => {
                     <tr key={city.cityid} className="hover:bg-gray-50">
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{city.cityid}</td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">{city.city}</td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">{city.TotalBranches}</td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">{city.TotalStudents}</td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{getStateName(city.stateid)}</td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{city.ATMDCode || '-'}</td>
                       <td className="px-6 py-4 whitespace-nowrap">

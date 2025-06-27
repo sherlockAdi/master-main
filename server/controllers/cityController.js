@@ -4,7 +4,7 @@ const { getDB } = require('../database');
 const getAllCities = async (req, res) => {
     try {
         const pool = getDB();
-        const result = await pool.request().query('SELECT * FROM [dbo].[ATM_city]');
+        const result = await pool.request().query('SELECT * FROM [dbo].[ATM_City_U88]');
         res.status(200).json({
             status: "success",
             message: "Cities fetched successfully",
@@ -19,13 +19,56 @@ const getAllCities = async (req, res) => {
     }
 };
 
+const getAllCitiessum = async (req, res) => {
+    try {
+        const pool = getDB();
+        const result = await pool.request().query(`
+      SELECT 
+        c.cityid,
+        c.city,
+        c.stateid,
+        c.status,
+        c.archive,
+        c.fyid,
+        c.target,
+        c.ATMDCode,
+        (
+          SELECT COUNT(DISTINCT b.id)
+          FROM [dbo].[Atm_M_Branch88] b
+          WHERE b.cityname = c.cityid
+        ) AS TotalBranches,
+        (
+          SELECT COUNT(DISTINCT sg.sid)
+          FROM [dbo].[Atm_T_StudentGurdianinfo88] sg
+          WHERE sg.fathercity = c.cityid
+        ) AS TotalStudents
+      FROM [dbo].[ATM_City_U88] c
+      ORDER BY c.cityid
+    `);
+
+        res.status(200).json({
+            status: "success",
+            message: "Cities fetched successfully",
+            data: result.recordset
+        });
+    } catch (err) {
+        console.error("City API Error:", err);
+        res.status(500).json({
+            status: "error",
+            message: err.message,
+            data: null
+        });
+    }
+};
+
+
 // Get city by ID
 const getCityById = async (req, res) => {
     try {
         const pool = getDB();
         const result = await pool.request()
             .input('cityid', req.params.id)
-            .query('SELECT * FROM [dbo].[ATM_city] WHERE cityid = @cityid');
+            .query('SELECT * FROM [dbo].[ATM_City_U88] WHERE cityid = @cityid');
 
         const city = result.recordset[0];
 
@@ -65,7 +108,7 @@ const createCity = async (req, res) => {
             .input('target', target)
             .input('ATMDCode', ATMDCode)
             .query(`
-                INSERT INTO [dbo].[ATM_city]
+                INSERT INTO [dbo].[ATM_City_U88]
                 (stateid, city, status, archive, fyid, target, ATMDCode)
                 VALUES (@stateid, @city, @status, @archive, @fyid, @target, @ATMDCode)
             `);
@@ -99,7 +142,7 @@ const updateCity = async (req, res) => {
             .input('target', target)
             .input('ATMDCode', ATMDCode)
             .query(`
-                UPDATE [dbo].[ATM_city]
+                UPDATE [dbo].[ATM_City_U88]
                 SET stateid = @stateid, city = @city, status = @status, archive = @archive,
                     fyid = @fyid, target = @target, ATMDCode = @ATMDCode
                 WHERE cityid = @cityid
@@ -125,7 +168,7 @@ const deleteCity = async (req, res) => {
         const pool = getDB();
         await pool.request()
             .input('cityid', req.params.id)
-            .query('DELETE FROM [dbo].[ATM_city] WHERE cityid = @cityid');
+            .query('DELETE FROM [dbo].[ATM_City_U88] WHERE cityid = @cityid');
 
         res.status(200).json({
             status: "success",
@@ -149,7 +192,7 @@ const getTopCities = async (req, res) => {
             SELECT TOP (1000)
                 [stateid], [city], [cityid], [status], [archive],
                 [fyid], [target], [ATMDCode]
-            FROM [dbo].[ATM_city]
+            FROM [dbo].[ATM_City_U88]
         `);
 
         res.status(200).json({
@@ -172,5 +215,6 @@ module.exports = {
     createCity,
     updateCity,
     deleteCity,
-    getTopCities
+    getTopCities,
+    getAllCitiessum
 };

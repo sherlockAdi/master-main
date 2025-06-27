@@ -4,7 +4,7 @@ const { getDB } = require('../database');
 const getAllStates = async (req, res) => {
     try {
         const pool = getDB();
-        const result = await pool.request().query('SELECT * FROM [dbo].[ATM_state] ORDER BY stateid');
+        const result = await pool.request().query('SELECT * FROM [dbo].[Atm_M_State88] ORDER BY stateid');
         res.status(200).json({
             status: "success",
             message: "States fetched successfully",
@@ -19,13 +19,55 @@ const getAllStates = async (req, res) => {
     }
 };
 
+const getstatesummary = async (req, res) => {
+    try {
+        const pool = getDB();
+        const result = await pool.request().query(`
+      SELECT 
+        s.stateid,
+        s.state,
+        s.conid,
+        s.status,
+        s.archive,
+        (
+          SELECT COUNT(DISTINCT id)
+          FROM [dbo].[Atm_M_Branch88] b
+          WHERE b.statename = s.stateid
+        ) AS TotalBranches,
+        (
+          SELECT COUNT(DISTINCT sg.sid)
+          FROM [dbo].[Atm_T_StudentGurdianinfo88] sg
+          WHERE sg.fatherstate = s.stateid
+        ) AS TotalStudents
+      FROM [dbo].[Atm_M_State88] s
+      ORDER BY s.stateid
+    `);
+
+        res.status(200).json({
+            status: "success",
+            message: "States fetched successfully",
+            data: result.recordset
+        });
+    } catch (err) {
+        console.error("State API Error:", err);
+        res.status(500).json({
+            status: "error",
+            message: err.message,
+            data: null
+        });
+    }
+};
+
+
+
+
 // Get state by ID
 const getStateById = async (req, res) => {
     try {
         const pool = getDB();
         const result = await pool.request()
             .input('stateid', req.params.id)
-            .query('SELECT * FROM [dbo].[ATM_state] WHERE stateid = @stateid');
+            .query('SELECT * FROM [dbo].[Atm_M_State88] WHERE stateid = @stateid');
 
         const state = result.recordset[0];
 
@@ -59,7 +101,7 @@ const createState = async (req, res) => {
 
         // Get max stateid
         const maxIdResult = await pool.request()
-            .query('SELECT ISNULL(MAX(stateid), 0) AS maxStateId FROM [dbo].[ATM_state]');
+            .query('SELECT ISNULL(MAX(stateid), 0) AS maxStateId FROM [dbo].[Atm_M_State88]');
         const nextStateId = maxIdResult.recordset[0].maxStateId + 1;
 
         // Insert new state
@@ -69,7 +111,7 @@ const createState = async (req, res) => {
             .input('state', state)
             .input('status', status)
             .input('archive', archive)
-            .query(`INSERT INTO [dbo].[ATM_state] (stateid, conid, state, status, archive)
+            .query(`INSERT INTO [dbo].[Atm_M_State88] (stateid, conid, state, status, archive)
                     VALUES (@stateid, @conid, @state, @status, @archive)`);
 
         res.status(201).json({
@@ -98,7 +140,7 @@ const updateState = async (req, res) => {
             .input('state', state)
             .input('status', status)
             .input('archive', archive)
-            .query(`UPDATE [dbo].[ATM_state]
+            .query(`UPDATE [dbo].[Atm_M_State88]
                     SET conid = @conid, state = @state, status = @status, archive = @archive
                     WHERE stateid = @stateid`);
 
@@ -122,7 +164,7 @@ const deleteState = async (req, res) => {
         const pool = getDB();
         await pool.request()
             .input('stateid', req.params.id)
-            .query('DELETE FROM [dbo].[ATM_state] WHERE stateid = @stateid');
+            .query('DELETE FROM [dbo].[Atm_M_State88] WHERE stateid = @stateid');
 
         res.status(200).json({
             status: "success",
@@ -143,5 +185,6 @@ module.exports = {
     getStateById,
     createState,
     updateState,
-    deleteState
+    deleteState,
+    getstatesummary
 };

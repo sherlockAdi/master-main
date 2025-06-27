@@ -5,6 +5,10 @@ class StateService {
     return apiService.get('/api/states');
   }
 
+  async getAllStatessuma() {
+    return apiService.get('/api/states/sum');
+  }
+
   async createState(data: any) {
     return apiService.post('/api/states', data);
   }

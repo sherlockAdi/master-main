@@ -5,10 +5,12 @@ const {
     getStateById,
     createState,
     updateState,
-    deleteState
+    deleteState,
+    getstatesummary
 } = require('../controllers/stateController');
 
 router.get('/', getAllStates);
+router.get('/sum', getstatesummary)
 router.get('/:id', getStateById);
 router.post('/', createState);
 router.put('/:id', updateState);

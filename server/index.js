@@ -9,6 +9,7 @@ const designationRoutes = require('./routes/designationRoutes');
 const cityRoutes = require('./routes/cityRoutes');
 const collegeRoutes = require('./routes/collegeRoutes');
 const branchRoutes = require('./routes/branchRoutes');
+const localityRoutes = require('./routes/localityRoutes');
 
 console.log('countryRoutes:', typeof countryRoutes);
 console.log('stateRoutes:', typeof stateRoutes);
@@ -35,6 +36,7 @@ app.use('/api/states', stateRoutes);
 app.use('/api/departments', departmentRoutes);
 app.use('/api/designations', designationRoutes);
 app.use('/api/cities', cityRoutes);
+app.use('/api/localities', localityRoutes);
 app.use('/api/colleges', collegeRoutes);
 app.use('/api/branches', branchRoutes);
 
