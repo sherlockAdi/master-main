@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Plus, Search, Edit, Trash2 } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
 import countryService from '../../services/countryService';
 import stateService from '../../services/stateService';
 
@@ -14,6 +15,7 @@ interface Country {
 }
 
 const CountriesPage: React.FC = () => {
+  const navigate = useNavigate();
   const [countries, setCountries] = useState<Country[]>([]);
   const [states, setStates] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
@@ -98,6 +100,10 @@ const CountriesPage: React.FC = () => {
     c.country.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
+  const handleCountryClick = (countryId: number) => {
+    navigate(`/master/states?country=${countryId}`);
+  };
+
   return (
     <div className="space-y-6">
       {/* Header */}
@@ -169,7 +175,14 @@ const CountriesPage: React.FC = () => {
                     return (
                       <tr key={country.conid} className="hover:bg-gray-50">
                         <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{country.conid}</td>
-                        <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">{country.country}</td>
+                        <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+                          <button
+                            onClick={() => handleCountryClick(country.conid)}
+                            className="text-blue-600 hover:text-blue-800 hover:underline cursor-pointer font-medium"
+                          >
+                            {country.country}
+                          </button>
+                        </td>
                         <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{stateCount}</td>
 
                         <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">{country?.TotalBranches}</td>

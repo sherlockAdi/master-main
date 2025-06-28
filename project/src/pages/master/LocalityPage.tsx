@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { Plus, Search, Edit, Trash2 } from 'lucide-react';
+import { useSearchParams } from 'react-router-dom';
 import localityService from '../../services/localityService';
 import cityService from '../../services/cityService';
 
@@ -18,6 +19,7 @@ interface City {
 }
 
 const LocalitiesPage: React.FC = () => {
+    const [searchParams, setSearchParams] = useSearchParams();
     const [localities, setLocalities] = useState<Locality[]>([]);
     const [cities, setCities] = useState<City[]>([]);
     const [searchTerm, setSearchTerm] = useState('');
@@ -47,6 +49,14 @@ const LocalitiesPage: React.FC = () => {
         loadData();
     }, []);
 
+    useEffect(() => {
+        // Check if there's a city parameter in the URL
+        const cityParam = searchParams.get('city');
+        if (cityParam) {
+            setFilterCityId(cityParam);
+        }
+    }, [searchParams]);
+
     const getCityName = (cityid: number) => {
         const city = cities.find(c => c.cityid === cityid);
         return city ? city.city : 'Unknown';
@@ -58,12 +68,31 @@ const LocalitiesPage: React.FC = () => {
         return matchesSearch && matchesCity;
     });
 
+    const handleCityFilterChange = (cityId: string) => {
+        setFilterCityId(cityId);
+        if (cityId) {
+            setSearchParams({ city: cityId });
+        } else {
+            setSearchParams({});
+        }
+    };
+
+    const clearCityFilter = () => {
+        setFilterCityId('');
+        setSearchParams({});
+    };
+
     return (
         <div className="p-6 space-y-6">
             <div className="flex justify-between items-center bg-white p-4 rounded shadow">
                 <div>
                     <h2 className="text-2xl font-bold text-gray-800">Localities</h2>
-                    <p className="text-gray-500">Showing tehsils as localities</p>
+                    <p className="text-gray-500">
+                        {filterCityId 
+                            ? `Showing localities for ${getCityName(parseInt(filterCityId))}`
+                            : 'Showing tehsils as localities'
+                        }
+                    </p>
                 </div>
                 <button className="bg-blue-600 text-white px-4 py-2 rounded flex items-center gap-2">
                     <Plus size={16} /> Add Locality
@@ -81,16 +110,27 @@ const LocalitiesPage: React.FC = () => {
                         className="w-full pl-10 pr-3 py-2 border rounded"
                     />
                 </div>
-                <select
-                    value={filterCityId}
-                    onChange={(e) => setFilterCityId(e.target.value)}
-                    className="w-full md:w-1/2 px-3 py-2 border rounded"
-                >
-                    <option value="">All Cities</option>
-                    {cities.map(city => (
-                        <option key={city.cityid} value={city.cityid}>{city.city}</option>
-                    ))}
-                </select>
+                <div className="flex gap-2 w-full md:w-1/2">
+                    <select
+                        value={filterCityId}
+                        onChange={(e) => handleCityFilterChange(e.target.value)}
+                        className="flex-1 px-3 py-2 border rounded"
+                    >
+                        <option value="">All Cities</option>
+                        {cities.map(city => (
+                            <option key={city.cityid} value={city.cityid}>{city.city}</option>
+                        ))}
+                    </select>
+                    {filterCityId && (
+                        <button
+                            onClick={clearCityFilter}
+                            className="px-3 py-2 text-sm text-gray-600 bg-gray-100 border border-gray-300 rounded hover:bg-gray-200 transition-colors"
+                            title="Clear city filter"
+                        >
+                            Clear
+                        </button>
+                    )}
+                </div>
             </div>
 
             <div className="bg-white shadow rounded overflow-x-auto">

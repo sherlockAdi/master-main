@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Plus, Search, Edit, Trash2 } from 'lucide-react';
+import { useSearchParams, useNavigate } from 'react-router-dom';
 import stateService from '../../services/stateService';
 import countryService from '../../services/countryService';
 import cityService from '../../services/cityService'; // New import
@@ -26,6 +27,8 @@ interface City {
 }
 
 const StatesPage: React.FC = () => {
+  const [searchParams, setSearchParams] = useSearchParams();
+  const navigate = useNavigate();
   const [states, setStates] = useState<State[]>([]);
   const [countries, setCountries] = useState<Country[]>([]);
   const [cities, setCities] = useState<City[]>([]); // New state
@@ -39,6 +42,14 @@ const StatesPage: React.FC = () => {
   useEffect(() => {
     loadData();
   }, []);
+
+  useEffect(() => {
+    // Check if there's a country parameter in the URL
+    const countryParam = searchParams.get('country');
+    if (countryParam) {
+      setFilterCountryId(countryParam);
+    }
+  }, [searchParams]);
 
   const loadData = async () => {
     setLoading(true);
@@ -124,6 +135,24 @@ const StatesPage: React.FC = () => {
     return matchesSearch && matchesCountry;
   });
 
+  const handleCountryFilterChange = (countryId: string) => {
+    setFilterCountryId(countryId);
+    if (countryId) {
+      setSearchParams({ country: countryId });
+    } else {
+      setSearchParams({});
+    }
+  };
+
+  const clearCountryFilter = () => {
+    setFilterCountryId('');
+    setSearchParams({});
+  };
+
+  const handleStateClick = (stateId: number) => {
+    navigate(`/master/cities?state=${stateId}`);
+  };
+
   return (
     <div className="space-y-6">
       {/* Header */}
@@ -131,7 +160,12 @@ const StatesPage: React.FC = () => {
         <div className="flex justify-between items-center">
           <div>
             <h1 className="text-2xl font-bold text-gray-900">States</h1>
-            <p className="text-gray-600 mt-1">Manage state master data</p>
+            <p className="text-gray-600 mt-1">
+              {filterCountryId 
+                ? `Showing states for ${getCountryName(parseInt(filterCountryId))}`
+                : 'Manage state master data'
+              }
+            </p>
           </div>
           <button
             onClick={() => handleOpen()}
@@ -156,18 +190,29 @@ const StatesPage: React.FC = () => {
               className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
             />
           </div>
-          <select
-            value={filterCountryId}
-            onChange={(e) => setFilterCountryId(e.target.value)}
-            className="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-          >
-            <option value="">All Countries</option>
-            {countries.map((country) => (
-              <option key={country.conid} value={country.conid}>
-                {country.country}
-              </option>
-            ))}
-          </select>
+          <div className="flex gap-2">
+            <select
+              value={filterCountryId}
+              onChange={(e) => handleCountryFilterChange(e.target.value)}
+              className="flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+            >
+              <option value="">All Countries</option>
+              {countries.map((country) => (
+                <option key={country.conid} value={country.conid}>
+                  {country.country}
+                </option>
+              ))}
+            </select>
+            {filterCountryId && (
+              <button
+                onClick={clearCountryFilter}
+                className="px-3 py-2 text-sm text-gray-600 bg-gray-100 border border-gray-300 rounded-lg hover:bg-gray-200 transition-colors"
+                title="Clear country filter"
+              >
+                Clear
+              </button>
+            )}
+          </div>
         </div>
       </div>
 
@@ -206,7 +251,14 @@ const StatesPage: React.FC = () => {
                     return (
                       <tr key={state.stateid} className="hover:bg-gray-50">
                         <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{state.stateid}</td>
-                        <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">{state.state}</td>
+                        <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+                          <button
+                            onClick={() => handleStateClick(state.stateid)}
+                            className="text-blue-600 hover:text-blue-800 hover:underline cursor-pointer font-medium"
+                          >
+                            {state.state}
+                          </button>
+                        </td>
                         <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">{state.TotalBranches}</td>
                         <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">{state.TotalStudents}</td>
                         <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{getCountryName(state.conid)}</td>

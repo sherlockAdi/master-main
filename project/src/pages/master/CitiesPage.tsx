@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Plus, Search, Edit, Trash2 } from 'lucide-react';
+import { useSearchParams, useNavigate } from 'react-router-dom';
 import cityService from '../../services/cityService';
 import stateService from '../../services/stateService';
 
@@ -22,6 +23,8 @@ interface State {
 }
 
 const CitiesPage: React.FC = () => {
+  const [searchParams, setSearchParams] = useSearchParams();
+  const navigate = useNavigate();
   const [cities, setCities] = useState<City[]>([]);
   const [states, setStates] = useState<State[]>([]);
   const [loading, setLoading] = useState(true);
@@ -42,6 +45,14 @@ const CitiesPage: React.FC = () => {
   useEffect(() => {
     loadData();
   }, []);
+
+  useEffect(() => {
+    // Check if there's a state parameter in the URL
+    const stateParam = searchParams.get('state');
+    if (stateParam) {
+      setFilterStateId(stateParam);
+    }
+  }, [searchParams]);
 
   const loadData = async () => {
     setLoading(true);
@@ -141,6 +152,24 @@ const CitiesPage: React.FC = () => {
     return matchesSearch && matchesState;
   });
 
+  const handleStateFilterChange = (stateId: string) => {
+    setFilterStateId(stateId);
+    if (stateId) {
+      setSearchParams({ state: stateId });
+    } else {
+      setSearchParams({});
+    }
+  };
+
+  const clearStateFilter = () => {
+    setFilterStateId('');
+    setSearchParams({});
+  };
+
+  const handleCityClick = (cityId: number) => {
+    navigate(`/master/locality?city=${cityId}`);
+  };
+
   return (
     <div className="space-y-6">
       {/* Header */}
@@ -148,7 +177,12 @@ const CitiesPage: React.FC = () => {
         <div className="flex justify-between items-center">
           <div>
             <h1 className="text-2xl font-bold text-gray-900">Cities</h1>
-            <p className="text-gray-600 mt-1">Manage city master data</p>
+            <p className="text-gray-600 mt-1">
+              {filterStateId 
+                ? `Showing cities for ${getStateName(parseInt(filterStateId))}`
+                : 'Manage city master data'
+              }
+            </p>
           </div>
           <button
             onClick={() => handleOpen()}
@@ -173,18 +207,29 @@ const CitiesPage: React.FC = () => {
               className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
             />
           </div>
-          <select
-            value={filterStateId}
-            onChange={(e) => setFilterStateId(e.target.value)}
-            className="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-          >
-            <option value="">All States</option>
-            {states.map((state) => (
-              <option key={state.stateid} value={state.stateid}>
-                {state.state}
-              </option>
-            ))}
-          </select>
+          <div className="flex gap-2">
+            <select
+              value={filterStateId}
+              onChange={(e) => handleStateFilterChange(e.target.value)}
+              className="flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+            >
+              <option value="">All States</option>
+              {states.map((state) => (
+                <option key={state.stateid} value={state.stateid}>
+                  {state.state}
+                </option>
+              ))}
+            </select>
+            {filterStateId && (
+              <button
+                onClick={clearStateFilter}
+                className="px-3 py-2 text-sm text-gray-600 bg-gray-100 border border-gray-300 rounded-lg hover:bg-gray-200 transition-colors"
+                title="Clear state filter"
+              >
+                Clear
+              </button>
+            )}
+          </div>
         </div>
       </div>
 
@@ -222,7 +267,14 @@ const CitiesPage: React.FC = () => {
                   filteredCities.map((city) => (
                     <tr key={city.cityid} className="hover:bg-gray-50">
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{city.cityid}</td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">{city.city}</td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+                        <button
+                          onClick={() => handleCityClick(city.cityid)}
+                          className="text-blue-600 hover:text-blue-800 hover:underline cursor-pointer font-medium"
+                        >
+                          {city.city}
+                        </button>
+                      </td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">{city.TotalBranches}</td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">{city.TotalStudents}</td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{getStateName(city.stateid)}</td>
