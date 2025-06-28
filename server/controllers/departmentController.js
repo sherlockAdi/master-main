@@ -4,7 +4,7 @@ const { getDB } = require('../database');
 const getAllDepartments = async (req, res) => {
     try {
         const pool = getDB();
-        const result = await pool.request().query('SELECT * FROM [dbo].[Department]');
+        const result = await pool.request().query('SELECT * FROM [dbo].[Atm_M_Department88]');
         res.status(200).json({
             status: "success",
             message: "Departments fetched successfully",
@@ -25,7 +25,7 @@ const getDepartmentById = async (req, res) => {
         const pool = getDB();
         const result = await pool.request()
             .input('id', req.params.id)
-            .query('SELECT * FROM [dbo].[Department] WHERE id = @id');
+            .query('SELECT * FROM [dbo].[Atm_M_Department88] WHERE id = @id');
 
         const department = result.recordset[0];
 
@@ -64,7 +64,7 @@ const createDepartment = async (req, res) => {
             .input('archive', archive)
             .input('showonwebsite', showonwebsite)
             .input('aboutdeptt', aboutdeptt)
-            .query(`INSERT INTO [dbo].[Department] 
+            .query(`INSERT INTO [dbo].[Atm_M_Department88] 
                     (DeptName, Deptid, shortname, status, archive, showonwebsite, aboutdeptt)
                     VALUES 
                     (@DeptName, @Deptid, @shortname, @status, @archive, @showonwebsite, @aboutdeptt)`);
@@ -97,7 +97,7 @@ const updateDepartment = async (req, res) => {
             .input('archive', archive)
             .input('showonwebsite', showonwebsite)
             .input('aboutdeptt', aboutdeptt)
-            .query(`UPDATE [dbo].[Department] 
+            .query(`UPDATE [dbo].[Atm_M_Department88] 
                     SET DeptName = @DeptName, Deptid = @Deptid, shortname = @shortname, 
                         status = @status, archive = @archive, showonwebsite = @showonwebsite, 
                         aboutdeptt = @aboutdeptt 
@@ -123,7 +123,7 @@ const deleteDepartment = async (req, res) => {
         const pool = getDB();
         await pool.request()
             .input('id', req.params.id)
-            .query('DELETE FROM [dbo].[Department] WHERE id = @id');
+            .query('DELETE FROM [dbo].[Atm_M_Department88] WHERE id = @id');
 
         res.status(200).json({
             status: "success",

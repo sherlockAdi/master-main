@@ -4,7 +4,7 @@ const { getDB } = require('../database');
 const getAllDesignations = async (req, res) => {
     try {
         const pool = getDB();
-        const result = await pool.request().query('SELECT * FROM [dbo].[Designation]');
+        const result = await pool.request().query('SELECT * FROM [dbo].[ATM_Designation_U88]');
         res.status(200).json({
             status: "success",
             message: "Designations fetched successfully",
@@ -25,7 +25,7 @@ const getDesignationById = async (req, res) => {
         const pool = getDB();
         const result = await pool.request()
             .input('id', req.params.id)
-            .query('SELECT * FROM [dbo].[Designation] WHERE id = @id');
+            .query('SELECT * FROM [dbo].[ATM_Designation_U88] WHERE id = @id');
 
         const designation = result.recordset[0];
 
@@ -64,7 +64,7 @@ const createDesignation = async (req, res) => {
             .input('status', status)
             .input('archive', archive)
             .input('gradeid', gradeid)
-            .query(`INSERT INTO [dbo].[Designation] 
+            .query(`INSERT INTO [dbo].[ATM_Designation_U88] 
                     (Desgid, Desgname, shortname, departmentid, status, archive, gradeid)
                     VALUES 
                     (@Desgid, @Desgname, @shortname, @departmentid, @status, @archive, @gradeid)`);
@@ -97,7 +97,7 @@ const updateDesignation = async (req, res) => {
             .input('status', status)
             .input('archive', archive)
             .input('gradeid', gradeid)
-            .query(`UPDATE [dbo].[Designation] 
+            .query(`UPDATE [dbo].[ATM_Designation_U88] 
                     SET Desgid = @Desgid, Desgname = @Desgname, shortname = @shortname, 
                         departmentid = @departmentid, status = @status, archive = @archive, 
                         gradeid = @gradeid 
@@ -123,7 +123,7 @@ const deleteDesignation = async (req, res) => {
         const pool = getDB();
         await pool.request()
             .input('id', req.params.id)
-            .query('DELETE FROM [dbo].[Designation] WHERE id = @id');
+            .query('DELETE FROM [dbo].[ATM_Designation_U88] WHERE id = @id');
 
         res.status(200).json({
             status: "success",
