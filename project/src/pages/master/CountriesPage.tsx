@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Plus, Search, Edit, Trash2 } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
 import countryService from '../../services/countryService';
 import stateService from '../../services/stateService';
 
@@ -14,6 +15,7 @@ interface Country {
 }
 
 const CountriesPage: React.FC = () => {
+  const navigate = useNavigate();
   const [countries, setCountries] = useState<Country[]>([]);
   const [states, setStates] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
@@ -94,9 +96,30 @@ const CountriesPage: React.FC = () => {
     return states.some(s => s.conid === conid);
   };
 
+  const hasRelatedData = (country: Country) => {
+    const hasStatesData = hasStates(country.conid);
+    const hasBranches = parseInt(country.TotalBranches || '0') > 0;
+    const hasStudents = parseInt(country.TotalStudents || '0') > 0;
+    
+    return hasStatesData || hasBranches || hasStudents;
+  };
+
+  const getDeleteDisabledReason = (country: Country) => {
+    const reasons = [];
+    if (hasStates(country.conid)) reasons.push('states');
+    if (parseInt(country.TotalBranches || '0') > 0) reasons.push('branches');
+    if (parseInt(country.TotalStudents || '0') > 0) reasons.push('students');
+    
+    return reasons.length > 0 ? `Cannot delete - has linked ${reasons.join(', ')}` : 'Delete';
+  };
+
   const filteredCountries = countries.filter(c =>
     c.country.toLowerCase().includes(searchTerm.toLowerCase())
   );
+
+  const handleCountryClick = (countryId: number) => {
+    navigate(`/master/states?country=${countryId}`);
+  };
 
   return (
     <div className="space-y-6">
@@ -163,13 +186,20 @@ const CountriesPage: React.FC = () => {
                   </tr>
                 ) : (
                   filteredCountries.map((country) => {
-                    const disabled = hasStates(country.conid);
+                    const disabled = hasRelatedData(country);
                     const stateCount = states.filter(s => s.conid === country.conid).length;
 
                     return (
                       <tr key={country.conid} className="hover:bg-gray-50">
                         <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{country.conid}</td>
-                        <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">{country.country}</td>
+                        <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+                          <button
+                            onClick={() => handleCountryClick(country.conid)}
+                            className="text-blue-600 hover:text-blue-800 hover:underline cursor-pointer font-medium"
+                          >
+                            {country.country}
+                          </button>
+                        </td>
                         <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{stateCount}</td>
 
                         <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">{country?.TotalBranches}</td>
@@ -197,7 +227,7 @@ const CountriesPage: React.FC = () => {
                               onClick={() => !disabled && handleDelete(country.conid)}
                               disabled={disabled}
                               className={`p-1 rounded ${disabled ? 'text-gray-400 cursor-not-allowed' : 'text-red-600 hover:text-red-900'}`}
-                              title={disabled ? 'Cannot delete - country has linked states' : 'Delete'}
+                              title={getDeleteDisabledReason(country)}
                             >
                               <Trash2 size={16} />
                             </button>
