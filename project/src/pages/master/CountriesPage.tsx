@@ -96,6 +96,23 @@ const CountriesPage: React.FC = () => {
     return states.some(s => s.conid === conid);
   };
 
+  const hasRelatedData = (country: Country) => {
+    const hasStatesData = hasStates(country.conid);
+    const hasBranches = parseInt(country.TotalBranches || '0') > 0;
+    const hasStudents = parseInt(country.TotalStudents || '0') > 0;
+    
+    return hasStatesData || hasBranches || hasStudents;
+  };
+
+  const getDeleteDisabledReason = (country: Country) => {
+    const reasons = [];
+    if (hasStates(country.conid)) reasons.push('states');
+    if (parseInt(country.TotalBranches || '0') > 0) reasons.push('branches');
+    if (parseInt(country.TotalStudents || '0') > 0) reasons.push('students');
+    
+    return reasons.length > 0 ? `Cannot delete - has linked ${reasons.join(', ')}` : 'Delete';
+  };
+
   const filteredCountries = countries.filter(c =>
     c.country.toLowerCase().includes(searchTerm.toLowerCase())
   );
@@ -169,7 +186,7 @@ const CountriesPage: React.FC = () => {
                   </tr>
                 ) : (
                   filteredCountries.map((country) => {
-                    const disabled = hasStates(country.conid);
+                    const disabled = hasRelatedData(country);
                     const stateCount = states.filter(s => s.conid === country.conid).length;
 
                     return (
@@ -210,7 +227,7 @@ const CountriesPage: React.FC = () => {
                               onClick={() => !disabled && handleDelete(country.conid)}
                               disabled={disabled}
                               className={`p-1 rounded ${disabled ? 'text-gray-400 cursor-not-allowed' : 'text-red-600 hover:text-red-900'}`}
-                              title={disabled ? 'Cannot delete - country has linked states' : 'Delete'}
+                              title={getDeleteDisabledReason(country)}
                             >
                               <Trash2 size={16} />
                             </button>

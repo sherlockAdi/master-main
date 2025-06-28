@@ -129,6 +129,23 @@ const StatesPage: React.FC = () => {
     return cities.some(city => city.stateid === stateid);
   };
 
+  const hasRelatedData = (state: State) => {
+    const hasCitiesData = hasCities(state.stateid);
+    const hasBranches = parseInt(state.TotalBranches || '0') > 0;
+    const hasStudents = parseInt(state.TotalStudents || '0') > 0;
+    
+    return hasCitiesData || hasBranches || hasStudents;
+  };
+
+  const getDeleteDisabledReason = (state: State) => {
+    const reasons = [];
+    if (hasCities(state.stateid)) reasons.push('cities');
+    if (parseInt(state.TotalBranches || '0') > 0) reasons.push('branches');
+    if (parseInt(state.TotalStudents || '0') > 0) reasons.push('students');
+    
+    return reasons.length > 0 ? `Cannot delete - has linked ${reasons.join(', ')}` : 'Delete';
+  };
+
   const filteredStates = states.filter(state => {
     const matchesSearch = state.state.toLowerCase().includes(searchTerm.toLowerCase());
     const matchesCountry = filterCountryId === '' || state.conid === parseInt(filterCountryId);
@@ -247,7 +264,7 @@ const StatesPage: React.FC = () => {
                   </tr>
                 ) : (
                   filteredStates.map((state) => {
-                    const disabled = hasCities(state.stateid);
+                    const disabled = hasRelatedData(state);
                     return (
                       <tr key={state.stateid} className="hover:bg-gray-50">
                         <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{state.stateid}</td>
@@ -285,7 +302,7 @@ const StatesPage: React.FC = () => {
                               onClick={() => !disabled && handleDelete(state.stateid)}
                               disabled={disabled}
                               className={`p-1 rounded ${disabled ? 'text-gray-400 cursor-not-allowed' : 'text-red-600 hover:text-red-900'}`}
-                              title={disabled ? 'Cannot delete - has cities' : 'Delete'}
+                              title={getDeleteDisabledReason(state)}
                             >
                               <Trash2 size={16} />
                             </button>

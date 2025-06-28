@@ -62,6 +62,25 @@ const LocalitiesPage: React.FC = () => {
         return city ? city.city : 'Unknown';
     };
 
+    const hasRelatedData = (locality: Locality) => {
+        return locality.TotalStudents > 0;
+    };
+
+    const getDeleteDisabledReason = (locality: Locality) => {
+        return locality.TotalStudents > 0 ? `Cannot delete - has ${locality.TotalStudents} students` : 'Delete';
+    };
+
+    const handleDelete = async (id: number) => {
+        if (window.confirm('Are you sure you want to delete this locality?')) {
+            try {
+                await localityService.deleteLocality(id);
+                loadData();
+            } catch (error) {
+                console.error('Error deleting locality:', error);
+            }
+        }
+    };
+
     const filteredLocalities = localities.filter(loc => {
         const matchesSearch = loc.Tehsil_names.toLowerCase().includes(searchTerm.toLowerCase());
         const matchesCity = filterCityId === '' || loc.atmcityid === parseInt(filterCityId);
@@ -160,7 +179,14 @@ const LocalitiesPage: React.FC = () => {
                                     <td className="px-6 py-4">{loc.TotalStudents}</td>
                                     <td className="px-6 py-4 flex gap-2">
                                         <button title="Edit"><Edit className="text-blue-600" size={16} /></button>
-                                        <button title="Delete"><Trash2 className="text-red-600" size={16} /></button>
+                                        <button
+                                            onClick={() => !hasRelatedData(loc) && handleDelete(loc.tehsil_id)}
+                                            disabled={hasRelatedData(loc)}
+                                            className={`p-1 rounded ${hasRelatedData(loc) ? 'text-gray-400 cursor-not-allowed' : 'text-red-600 hover:text-red-900'}`}
+                                            title={getDeleteDisabledReason(loc)}
+                                        >
+                                            <Trash2 size={16} />
+                                        </button>
                                     </td>
                                 </tr>
                             ))}

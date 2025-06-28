@@ -146,6 +146,21 @@ const CitiesPage: React.FC = () => {
     return state ? state.state : 'Unknown';
   };
 
+  const hasRelatedData = (city: City) => {
+    const hasBranches = parseInt(city.TotalBranches || '0') > 0;
+    const hasStudents = parseInt(city.TotalStudents || '0') > 0;
+    
+    return hasBranches || hasStudents;
+  };
+
+  const getDeleteDisabledReason = (city: City) => {
+    const reasons = [];
+    if (parseInt(city.TotalBranches || '0') > 0) reasons.push('branches');
+    if (parseInt(city.TotalStudents || '0') > 0) reasons.push('students');
+    
+    return reasons.length > 0 ? `Cannot delete - has linked ${reasons.join(', ')}` : 'Delete';
+  };
+
   const filteredCities = cities.filter(city => {
     const matchesSearch = city.city.toLowerCase().includes(searchTerm.toLowerCase());
     const matchesState = filterStateId === '' || city.stateid === parseInt(filterStateId);
@@ -299,9 +314,10 @@ const CitiesPage: React.FC = () => {
                             <Edit size={16} />
                           </button>
                           <button
-                            onClick={() => handleDelete(city.cityid)}
-                            className="text-red-600 hover:text-red-900 p-1 rounded"
-                            title="Delete"
+                            onClick={() => !hasRelatedData(city) && handleDelete(city.cityid)}
+                            disabled={hasRelatedData(city)}
+                            className={`p-1 rounded ${hasRelatedData(city) ? 'text-gray-400 cursor-not-allowed' : 'text-red-600 hover:text-red-900'}`}
+                            title={getDeleteDisabledReason(city)}
                           >
                             <Trash2 size={16} />
                           </button>
