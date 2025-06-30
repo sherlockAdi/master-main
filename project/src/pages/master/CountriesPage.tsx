@@ -26,6 +26,8 @@ const CountriesPage: React.FC = () => {
   const [page, setPage] = useState(1);
   const [pageSize, setPageSize] = useState<number | 'all'>(10);
   const [total, setTotal] = useState(0);
+  const [totalStudentsInView, setTotalStudentsInView] = useState(0);
+  const [unassociatedStudents, setUnassociatedStudents] = useState(0);
   const [sortBy, setSortBy] = useState('conid');
   const [sortOrder, setSortOrder] = useState('asc');
 
@@ -40,13 +42,16 @@ const CountriesPage: React.FC = () => {
   const loadData = async () => {
     setLoading(true);
     try {
-      const [countryRes, stateRes] = await Promise.all([
+      const [countryRes, stateRes, unassociatedRes] = await Promise.all([
         countryService.getAllCountriesSum({ page, limit: pageSize, search: searchTerm, sortBy, sortOrder }),
-        stateService.getAllStates()
+        stateService.getAllStates(),
+        stateService.getUnassociatedStudentCount()
       ]);
       setCountries(countryRes.data || []);
       setTotal(countryRes.total || 0);
+      setTotalStudentsInView(countryRes.totalStudentsInView || 0);
       setStates(stateRes.data || []);
+      setUnassociatedStudents(unassociatedRes.data.count || 0);
     } catch (error) {
       console.error('Error loading data:', error);
       setCountries([]);
@@ -197,7 +202,9 @@ const CountriesPage: React.FC = () => {
               <button disabled={page === 1 || pageSize === 'all'} onClick={() => setPage(page - 1)} className="px-2 py-1 border rounded disabled:opacity-50">Prev</button>
               <span>Page {page} of {pageSize === 'all' ? 1 : Math.max(1, Math.ceil(total / (typeof pageSize === 'number' ? pageSize : 1)))}</span>
               <button disabled={pageSize === 'all' || page >= Math.ceil(total / (typeof pageSize === 'number' ? pageSize : 1))} onClick={() => setPage(page + 1)} className="px-2 py-1 border rounded disabled:opacity-50">Next</button>
-              <span className="ml-4 text-gray-500">Total: {total}</span>
+              <span className="ml-auto text-sm text-gray-600">Total Countries: <span className="font-semibold">{total}</span></span>
+              <span className="ml-4 text-sm text-gray-600">Students in View: <span className="font-semibold">{totalStudentsInView}</span></span>
+              <span className="ml-4 text-sm text-red-600">Unassociated: <span className="font-semibold">{unassociatedStudents}</span></span>
             </div>
             <table className="w-full">
               <thead className="bg-gray-50 border-b border-gray-200">

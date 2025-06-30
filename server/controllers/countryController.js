@@ -29,6 +29,15 @@ const getAllCountries = async (req, res) => {
         const countResult = await pool.request().query(countQuery);
         const total = countResult.recordset[0].total;
 
+        // Get total students in view
+        const studentCountQuery = `
+            SELECT COUNT(DISTINCT sg.sid) as totalStudents
+            FROM [dbo].[Atm_T_StudentGurdianinfo88] sg
+            JOIN [dbo].[ATM_M_Country_U88] c ON sg.fathercountry = c.conid
+            ${whereClause}`;
+        const studentCountResult = await pool.request().query(studentCountQuery);
+        const totalStudentsInView = studentCountResult.recordset[0]?.totalStudents || 0;
+
         // Pagination logic
         let query = `
       SELECT 
@@ -61,6 +70,7 @@ const getAllCountries = async (req, res) => {
             status: "success",
             data: result.recordset,
             total,
+            totalStudentsInView,
             message: "Countries fetched successfully"
         });
     } catch (err) {

@@ -3,6 +3,7 @@ import { Plus, Search, Edit, Trash2, ArrowUp, ArrowDown } from 'lucide-react';
 import { useSearchParams } from 'react-router-dom';
 import localityService from '../../services/localityService';
 import cityService from '../../services/cityService';
+import stateService from '../../services/stateService';
 
 interface Locality {
     tehsil_id: number;
@@ -29,6 +30,8 @@ const LocalitiesPage: React.FC = () => {
     const [page, setPage] = useState(1);
     const [pageSize, setPageSize] = useState<number | 'all'>(10);
     const [total, setTotal] = useState(0);
+    const [totalStudentsInView, setTotalStudentsInView] = useState(0);
+    const [unassociatedStudents, setUnassociatedStudents] = useState(0);
     const [sortBy, setSortBy] = useState('tehsil_id');
     const [sortOrder, setSortOrder] = useState('asc');
 
@@ -41,13 +44,16 @@ const LocalitiesPage: React.FC = () => {
                 params.atmcityid = filterCityId;
             }
 
-            const [tehsilRes, cityRes] = await Promise.all([
+            const [tehsilRes, cityRes, unassociatedRes] = await Promise.all([
                 localityService.getAllLocalitiesSum(params),
-                cityService.getAllCities()
+                cityService.getAllCities(),
+                stateService.getUnassociatedStudentCount()
             ]);
             setLocalities(tehsilRes.data || []);
             setTotal(tehsilRes.total || 0);
+            setTotalStudentsInView(tehsilRes.totalStudentsInView || 0);
             setCities(cityRes.data || []);
+            setUnassociatedStudents(unassociatedRes.data.count || 0);
         } catch (err) {
             console.error(err);
             setError('Failed to load data.');
@@ -192,7 +198,9 @@ const LocalitiesPage: React.FC = () => {
                 <button disabled={page === 1 || pageSize === 'all'} onClick={() => setPage(page - 1)} className="px-2 py-1 border rounded disabled:opacity-50">Prev</button>
                 <span>Page {page} of {pageSize === 'all' ? 1 : Math.max(1, Math.ceil(total / (typeof pageSize === 'number' ? pageSize : 1)))}</span>
                 <button disabled={pageSize === 'all' || page >= Math.ceil(total / (typeof pageSize === 'number' ? pageSize : 1))} onClick={() => setPage(page + 1)} className="px-2 py-1 border rounded disabled:opacity-50">Next</button>
-                <span className="ml-4 text-gray-500">Total: {total}</span>
+                <span className="ml-auto text-sm text-gray-600">Total Localities: <span className="font-semibold">{total}</span></span>
+                <span className="ml-4 text-sm text-gray-600">Students in View: <span className="font-semibold">{totalStudentsInView}</span></span>
+                <span className="ml-4 text-sm text-red-600">Unassociated: <span className="font-semibold">{unassociatedStudents}</span></span>
             </div>
 
             <div className="bg-white shadow rounded overflow-x-auto">

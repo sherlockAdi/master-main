@@ -41,6 +41,8 @@ const StatesPage: React.FC = () => {
   const [page, setPage] = useState(1);
   const [pageSize, setPageSize] = useState<number | 'all'>(10);
   const [total, setTotal] = useState(0);
+  const [totalStudentsInView, setTotalStudentsInView] = useState(0);
+  const [unassociatedStudents, setUnassociatedStudents] = useState(0);
   const [sortBy, setSortBy] = useState('stateid');
   const [sortOrder, setSortOrder] = useState('asc');
 
@@ -70,15 +72,18 @@ const StatesPage: React.FC = () => {
         params.conid = filterCountryId;
       }
 
-      const [stateRes, countryRes, cityRes] = await Promise.all([
+      const [stateRes, countryRes, cityRes, unassociatedRes] = await Promise.all([
         stateService.getAllStatessuma(params),
         countryService.getAllCountries(),
-        cityService.getAllCities()
+        cityService.getAllCities(),
+        stateService.getUnassociatedStudentCount()
       ]);
       setStates(stateRes.data || []);
       setTotal(stateRes.total || 0);
+      setTotalStudentsInView(stateRes.totalStudentsInView || 0);
       setCountries(countryRes.data || []);
       setCities(cityRes.data || []);
+      setUnassociatedStudents(unassociatedRes.data.count || 0);
     } catch (error) {
       console.error('Error loading data:', error);
       setStates([]);
@@ -274,7 +279,9 @@ const StatesPage: React.FC = () => {
         <button disabled={page === 1 || pageSize === 'all'} onClick={() => setPage(page - 1)} className="px-2 py-1 border rounded disabled:opacity-50">Prev</button>
         <span>Page {page} of {pageSize === 'all' ? 1 : Math.max(1, Math.ceil(total / (typeof pageSize === 'number' ? pageSize : 1)))}</span>
         <button disabled={pageSize === 'all' || page >= Math.ceil(total / (typeof pageSize === 'number' ? pageSize : 1))} onClick={() => setPage(page + 1)} className="px-2 py-1 border rounded disabled:opacity-50">Next</button>
-        <span className="ml-4 text-gray-500">Total: {total}</span>
+        <span className="ml-auto text-sm text-gray-600">Total States: <span className="font-semibold">{total}</span></span>
+        <span className="ml-4 text-sm text-gray-600">Students in View: <span className="font-semibold">{totalStudentsInView}</span></span>
+        <span className="ml-4 text-sm text-red-600">Unassociated: <span className="font-semibold">{unassociatedStudents}</span></span>
       </div>
 
       {/* Table */}

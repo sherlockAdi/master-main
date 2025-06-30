@@ -21,6 +21,10 @@ class StateService {
   async deleteState(id: number) {
     return apiService.delete(`/api/states/${id}`);
   }
+
+  async getUnassociatedStudentCount() {
+    return apiService.get('/api/states/students/unassociated-count');
+  }
 }
 
 export default new StateService();

@@ -51,6 +51,15 @@ const getAllCitiessum = async (req, res) => {
         const countResult = await pool.request().query(countQuery);
         const total = countResult.recordset[0].total;
 
+        // Get total students in view
+        const studentCountQuery = `
+            SELECT COUNT(DISTINCT sg.sid) as totalStudents
+            FROM [dbo].[Atm_T_StudentGurdianinfo88] sg
+            JOIN [dbo].[ATM_City_U88] c ON sg.fathercity = c.cityid
+            ${whereClause}`;
+        const studentCountResult = await pool.request().query(studentCountQuery);
+        const totalStudentsInView = studentCountResult.recordset[0]?.totalStudents || 0;
+
         // Pagination logic
         let query = `
       SELECT 
@@ -87,7 +96,8 @@ const getAllCitiessum = async (req, res) => {
             status: "success",
             message: "Cities fetched successfully",
             data: result.recordset,
-            total
+            total,
+            totalStudentsInView
         });
     } catch (err) {
         console.error("City API Error:", err);

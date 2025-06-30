@@ -51,6 +51,15 @@ const getstatesummary = async (req, res) => {
         const countResult = await pool.request().query(countQuery);
         const total = countResult.recordset[0].total;
 
+        // Get total students in view
+        const studentCountQuery = `
+            SELECT COUNT(DISTINCT sg.sid) as totalStudents
+            FROM [dbo].[Atm_T_StudentGurdianinfo88] sg
+            JOIN [dbo].[Atm_M_State88] s ON sg.fatherstate = s.stateid
+            ${whereClause}`;
+        const studentCountResult = await pool.request().query(studentCountQuery);
+        const totalStudentsInView = studentCountResult.recordset[0]?.totalStudents || 0;
+
         // Pagination logic
         let query = `
             SELECT 
@@ -72,7 +81,8 @@ const getstatesummary = async (req, res) => {
             status: "success",
             message: "States fetched successfully",
             data: result.recordset,
-            total
+            total,
+            totalStudentsInView
         });
     } catch (err) {
         console.error("State API Error:", err);
@@ -83,9 +93,6 @@ const getstatesummary = async (req, res) => {
         });
     }
 };
-
-
-
 
 // Get state by ID
 const getStateById = async (req, res) => {
@@ -206,11 +213,36 @@ const deleteState = async (req, res) => {
     }
 };
 
+const getUnassociatedStudentCount = async (req, res) => {
+    try {
+        const pool = getDB();
+        // Assuming 0 or NULL means unassociated
+        const result = await pool.request().query(`
+            SELECT COUNT(sid) as count
+            FROM [dbo].[Atm_T_StudentGurdianinfo88]
+            WHERE fathercountry IS NULL OR fathercountry = 0
+               OR fatherstate IS NULL OR fatherstate = 0
+               OR fathercity IS NULL OR fathercity = 0
+        `);
+        res.status(200).json({
+            status: "success",
+            data: result.recordset[0]
+        });
+    } catch (err) {
+        res.status(500).json({
+            status: "error",
+            message: err.message,
+            data: null
+        });
+    }
+};
+
 module.exports = {
     getAllStates,
     getStateById,
     createState,
     updateState,
     deleteState,
-    getstatesummary
+    getstatesummary,
+    getUnassociatedStudentCount
 };
