@@ -7,12 +7,12 @@ const {
     updateState,
     deleteState,
     getstatesummary,
-    getUnassociatedStudentCount
+    getUnassociatedStateStudentCount
 } = require('../controllers/stateController');
 
 router.get('/', getAllStates);
 router.get('/sum', getstatesummary);
-router.get('/students/unassociated-count', getUnassociatedStudentCount);
+router.get('/students/unassociated-state-count', getUnassociatedStateStudentCount);
 router.get('/:id', getStateById);
 router.post('/', createState);
 router.put('/:id', updateState);

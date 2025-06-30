@@ -190,10 +190,26 @@ const deleteCountry = async (req, res) => {
     }
 };
 
+const getUnassociatedCountryStudentCount = async (req, res) => {
+    try {
+        const pool = getDB();
+        const result = await pool.request().query(`
+            SELECT COUNT(DISTINCT sid) as count 
+            FROM [dbo].[Atm_T_StudentGurdianinfo88] sg
+            LEFT JOIN [dbo].[ATM_M_Country_U88] c ON sg.fathercountry = c.conid
+            WHERE c.conid IS NULL
+        `);
+        res.status(200).json({ status: "success", data: result.recordset[0] });
+    } catch (err) {
+        res.status(500).json({ status: "error", message: err.message });
+    }
+};
+
 module.exports = {
     getAllCountries,
     getCountryById,
     createCountry,
     updateCountry,
-    deleteCountry
+    deleteCountry,
+    getUnassociatedCountryStudentCount
 };

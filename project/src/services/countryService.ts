@@ -14,7 +14,11 @@ class CountryService {
   }
 
   async deleteCountry(id: number) {
-    return apiService.delete(`/api/countries${id}`);
+    return apiService.delete(`/api/countries/${id}`);
+  }
+
+  async getUnassociatedCountryStudentCount() {
+    return apiService.get('/api/countries/students/unassociated-country-count');
   }
 
   async getAllCountriesSum(params: any = {}) {

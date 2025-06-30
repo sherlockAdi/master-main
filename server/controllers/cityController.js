@@ -257,6 +257,21 @@ const getTopCities = async (req, res) => {
     }
 };
 
+const getUnassociatedCityStudentCount = async (req, res) => {
+    try {
+        const pool = getDB();
+        const result = await pool.request().query(`
+            SELECT COUNT(DISTINCT sid) as count 
+            FROM [dbo].[Atm_T_StudentGurdianinfo88] sg
+            LEFT JOIN [dbo].[ATM_City_U88] c ON sg.fathercity = c.cityid
+            WHERE c.cityid IS NULL
+        `);
+        res.status(200).json({ status: "success", data: result.recordset[0] });
+    } catch (err) {
+        res.status(500).json({ status: "error", message: err.message });
+    }
+};
+
 module.exports = {
     getAllCities,
     getCityById,
@@ -264,5 +279,6 @@ module.exports = {
     updateCity,
     deleteCity,
     getTopCities,
-    getAllCitiessum
+    getAllCitiessum,
+    getUnassociatedCityStudentCount
 };

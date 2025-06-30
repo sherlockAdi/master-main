@@ -1,13 +1,23 @@
 const express = require('express');
 const router = express.Router();
-const localityController = require('../controllers/localityController');
+const {
+    getAllTehsils,
+    getTehsilById,
+    createTehsil,
+    updateTehsil,
+    deleteTehsil,
+    getTopTehsils,
+    getAllTehsilSum,
+    getUnassociatedLocalityStudentCount
+} = require('../controllers/localityController');
 
-router.get('/', localityController.getAllTehsilSum);
-router.get('/sum', localityController.getAllTehsilSum); // Optional: only if implemented
-router.get('/top', localityController.getTopTehsils);
-// router.get('/:id', localityController.get);
-router.post('/', localityController.createTehsil);
-router.put('/:id', localityController.updateTehsil);
-router.delete('/:id', localityController.deleteTehsil);
+router.get('/', getAllTehsils);
+router.get('/sum', getAllTehsilSum);
+router.get('/top', getTopTehsils);
+router.get('/students/unassociated-locality-count', getUnassociatedLocalityStudentCount);
+router.get('/:id', getTehsilById);
+router.post('/', createTehsil);
+router.put('/:id', updateTehsil);
+router.delete('/:id', deleteTehsil);
 
 module.exports = router;

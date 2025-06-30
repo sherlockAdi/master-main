@@ -45,7 +45,7 @@ const CitiesPage: React.FC = () => {
   const [pageSize, setPageSize] = useState<number | 'all'>(10);
   const [total, setTotal] = useState(0);
   const [totalStudentsInView, setTotalStudentsInView] = useState(0);
-  const [unassociatedStudents, setUnassociatedStudents] = useState(0);
+  const [unassociatedStudentCount, setUnassociatedStudentCount] = useState(0);
   const [sortBy, setSortBy] = useState('cityid');
   const [sortOrder, setSortOrder] = useState('asc');
 
@@ -78,13 +78,13 @@ const CitiesPage: React.FC = () => {
       const [cityRes, stateRes, unassociatedRes] = await Promise.all([
         cityService.getAllCitiessum(params),
         stateService.getAllStates(),
-        stateService.getUnassociatedStudentCount()
+        cityService.getUnassociatedCityStudentCount()
       ]);
       setCities(cityRes.data || []);
       setTotal(cityRes.total || 0);
       setTotalStudentsInView(cityRes.totalStudentsInView || 0);
       setStates(stateRes.data || []);
-      setUnassociatedStudents(unassociatedRes.data.count || 0);
+      setUnassociatedStudentCount(unassociatedRes.data.count || 0);
     } catch (error) {
       console.error('Error loading data:', error);
       setCities([]);
@@ -304,7 +304,7 @@ const CitiesPage: React.FC = () => {
               <button disabled={pageSize === 'all' || page >= Math.ceil(total / (typeof pageSize === 'number' ? pageSize : 1))} onClick={() => setPage(page + 1)} className="px-2 py-1 border rounded disabled:opacity-50">Next</button>
               <span className="ml-auto text-sm text-gray-600">Total Cities: <span className="font-semibold">{total}</span></span>
               <span className="ml-4 text-sm text-gray-600">Students in View: <span className="font-semibold">{totalStudentsInView}</span></span>
-              <span className="ml-4 text-sm text-red-600">Unassociated: <span className="font-semibold">{unassociatedStudents}</span></span>
+              <span className="ml-4 text-sm text-red-600">Unassociated: <span className="font-semibold">{unassociatedStudentCount}</span></span>
             </div>
             <table className="w-full">
               <thead className="bg-gray-50 border-b border-gray-200">

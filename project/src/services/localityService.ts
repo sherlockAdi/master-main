@@ -22,6 +22,10 @@ class LocalityService {
     async deleteLocality(id: number) {
         return apiService.delete(`/api/localities/${id}`);
     }
+
+    async getUnassociatedLocalityStudentCount() {
+        return apiService.get('/api/localitys/students/unassociated-locality-count');
+    }
 }
 
 export default new LocalityService();

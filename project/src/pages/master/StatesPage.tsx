@@ -42,7 +42,7 @@ const StatesPage: React.FC = () => {
   const [pageSize, setPageSize] = useState<number | 'all'>(10);
   const [total, setTotal] = useState(0);
   const [totalStudentsInView, setTotalStudentsInView] = useState(0);
-  const [unassociatedStudents, setUnassociatedStudents] = useState(0);
+  const [unassociatedStudentCount, setUnassociatedStudentCount] = useState(0);
   const [sortBy, setSortBy] = useState('stateid');
   const [sortOrder, setSortOrder] = useState('asc');
 
@@ -62,6 +62,7 @@ const StatesPage: React.FC = () => {
 
   useEffect(() => {
     loadData();
+    loadUnassociatedStudentCount();
   }, [page, pageSize, searchTerm, filterCountryId, sortBy, sortOrder]);
 
   const loadData = async () => {
@@ -72,18 +73,16 @@ const StatesPage: React.FC = () => {
         params.conid = filterCountryId;
       }
 
-      const [stateRes, countryRes, cityRes, unassociatedRes] = await Promise.all([
+      const [stateRes, countryRes, cityRes] = await Promise.all([
         stateService.getAllStatessuma(params),
         countryService.getAllCountries(),
-        cityService.getAllCities(),
-        stateService.getUnassociatedStudentCount()
+        cityService.getAllCities()
       ]);
       setStates(stateRes.data || []);
       setTotal(stateRes.total || 0);
       setTotalStudentsInView(stateRes.totalStudentsInView || 0);
       setCountries(countryRes.data || []);
       setCities(cityRes.data || []);
-      setUnassociatedStudents(unassociatedRes.data.count || 0);
     } catch (error) {
       console.error('Error loading data:', error);
       setStates([]);
@@ -91,6 +90,15 @@ const StatesPage: React.FC = () => {
       setCities([]);
     } finally {
       setLoading(false);
+    }
+  };
+
+  const loadUnassociatedStudentCount = async () => {
+    try {
+      const res = await stateService.getUnassociatedStateStudentCount();
+      setUnassociatedStudentCount(res.data.count);
+    } catch (error) {
+      console.error("Failed to load unassociated student count:", error);
     }
   };
 
@@ -281,7 +289,7 @@ const StatesPage: React.FC = () => {
         <button disabled={pageSize === 'all' || page >= Math.ceil(total / (typeof pageSize === 'number' ? pageSize : 1))} onClick={() => setPage(page + 1)} className="px-2 py-1 border rounded disabled:opacity-50">Next</button>
         <span className="ml-auto text-sm text-gray-600">Total States: <span className="font-semibold">{total}</span></span>
         <span className="ml-4 text-sm text-gray-600">Students in View: <span className="font-semibold">{totalStudentsInView}</span></span>
-        <span className="ml-4 text-sm text-red-600">Unassociated: <span className="font-semibold">{unassociatedStudents}</span></span>
+        <span className="ml-4 text-sm text-red-600">Unassociated: <span className="font-semibold">{unassociatedStudentCount}</span></span>
       </div>
 
       {/* Table */}

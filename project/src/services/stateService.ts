@@ -22,8 +22,13 @@ class StateService {
     return apiService.delete(`/api/states/${id}`);
   }
 
-  async getUnassociatedStudentCount() {
-    return apiService.get('/api/states/students/unassociated-count');
+  async getUnassociatedStateStudentCount() {
+    return apiService.get('/api/states/students/unassociated-state-count');
+  }
+
+  async getAllStatesSum(params: any = {}) {
+    const query = new URLSearchParams(params).toString();
+    return apiService.get(`/api/states/sum${query ? `?${query}` : ''}`);
   }
 }
 

@@ -243,8 +243,20 @@ const getAllTehsilSum = async (req, res) => {
     }
 };
 
-
-
+const getUnassociatedLocalityStudentCount = async (req, res) => {
+    try {
+        const pool = getDB();
+        const result = await pool.request().query(`
+            SELECT COUNT(DISTINCT sid) as count 
+            FROM [dbo].[Atm_T_StudentGurdianinfo88] sg
+            LEFT JOIN [dbo].[ATM_UPSDM_Tehsil_U88] t ON sg.tehsile_code = t.tehsil_id
+            WHERE t.tehsil_id IS NULL
+        `);
+        res.status(200).json({ status: "success", data: result.recordset[0] });
+    } catch (err) {
+        res.status(500).json({ status: "error", message: err.message });
+    }
+};
 
 module.exports = {
     getAllTehsils,
@@ -254,4 +266,5 @@ module.exports = {
     deleteTehsil,
     getTopTehsils,
     getAllTehsilSum,
+    getUnassociatedLocalityStudentCount
 };

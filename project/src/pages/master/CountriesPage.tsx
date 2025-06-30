@@ -27,9 +27,10 @@ const CountriesPage: React.FC = () => {
   const [pageSize, setPageSize] = useState<number | 'all'>(10);
   const [total, setTotal] = useState(0);
   const [totalStudentsInView, setTotalStudentsInView] = useState(0);
-  const [unassociatedStudents, setUnassociatedStudents] = useState(0);
+  const [unassociatedStudentCount, setUnassociatedStudentCount] = useState(0);
   const [sortBy, setSortBy] = useState('conid');
   const [sortOrder, setSortOrder] = useState('asc');
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     setPage(1); // Reset to first page on search
@@ -37,27 +38,35 @@ const CountriesPage: React.FC = () => {
 
   useEffect(() => {
     loadData();
+    loadUnassociatedStudentCount();
   }, [page, pageSize, searchTerm, sortBy, sortOrder]);
 
   const loadData = async () => {
     setLoading(true);
+    setError(null);
     try {
-      const [countryRes, stateRes, unassociatedRes] = await Promise.all([
+      const [countryRes, stateRes] = await Promise.all([
         countryService.getAllCountriesSum({ page, limit: pageSize, search: searchTerm, sortBy, sortOrder }),
-        stateService.getAllStates(),
-        stateService.getUnassociatedStudentCount()
+        stateService.getAllStates()
       ]);
       setCountries(countryRes.data || []);
       setTotal(countryRes.total || 0);
       setTotalStudentsInView(countryRes.totalStudentsInView || 0);
       setStates(stateRes.data || []);
-      setUnassociatedStudents(unassociatedRes.data.count || 0);
     } catch (error) {
       console.error('Error loading data:', error);
-      setCountries([]);
-      setStates([]);
+      setError('Failed to load data.');
     } finally {
       setLoading(false);
+    }
+  };
+
+  const loadUnassociatedStudentCount = async () => {
+    try {
+      const res = await countryService.getUnassociatedCountryStudentCount();
+      setUnassociatedStudentCount(res.data.count);
+    } catch (error) {
+      console.error("Failed to load unassociated student count:", error);
     }
   };
 
@@ -204,7 +213,7 @@ const CountriesPage: React.FC = () => {
               <button disabled={pageSize === 'all' || page >= Math.ceil(total / (typeof pageSize === 'number' ? pageSize : 1))} onClick={() => setPage(page + 1)} className="px-2 py-1 border rounded disabled:opacity-50">Next</button>
               <span className="ml-auto text-sm text-gray-600">Total Countries: <span className="font-semibold">{total}</span></span>
               <span className="ml-4 text-sm text-gray-600">Students in View: <span className="font-semibold">{totalStudentsInView}</span></span>
-              <span className="ml-4 text-sm text-red-600">Unassociated: <span className="font-semibold">{unassociatedStudents}</span></span>
+              <span className="ml-4 text-sm text-red-600">Unassociated: <span className="font-semibold">{unassociatedStudentCount}</span></span>
             </div>
             <table className="w-full">
               <thead className="bg-gray-50 border-b border-gray-200">

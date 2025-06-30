@@ -31,7 +31,7 @@ const LocalitiesPage: React.FC = () => {
     const [pageSize, setPageSize] = useState<number | 'all'>(10);
     const [total, setTotal] = useState(0);
     const [totalStudentsInView, setTotalStudentsInView] = useState(0);
-    const [unassociatedStudents, setUnassociatedStudents] = useState(0);
+    const [unassociatedStudentCount, setUnassociatedStudentCount] = useState(0);
     const [sortBy, setSortBy] = useState('tehsil_id');
     const [sortOrder, setSortOrder] = useState('asc');
 
@@ -44,21 +44,28 @@ const LocalitiesPage: React.FC = () => {
                 params.atmcityid = filterCityId;
             }
 
-            const [tehsilRes, cityRes, unassociatedRes] = await Promise.all([
+            const [tehsilRes, cityRes] = await Promise.all([
                 localityService.getAllLocalitiesSum(params),
                 cityService.getAllCities(),
-                stateService.getUnassociatedStudentCount()
             ]);
             setLocalities(tehsilRes.data || []);
             setTotal(tehsilRes.total || 0);
             setTotalStudentsInView(tehsilRes.totalStudentsInView || 0);
             setCities(cityRes.data || []);
-            setUnassociatedStudents(unassociatedRes.data.count || 0);
         } catch (err) {
             console.error(err);
             setError('Failed to load data.');
         } finally {
             setLoading(false);
+        }
+    };
+
+    const loadUnassociatedStudentCount = async () => {
+        try {
+            const res = await localityService.getUnassociatedLocalityStudentCount();
+            setUnassociatedStudentCount(res.data.count);
+        } catch (error) {
+            console.error("Failed to load unassociated student count:", error);
         }
     };
 
@@ -78,6 +85,7 @@ const LocalitiesPage: React.FC = () => {
 
     useEffect(() => {
         loadData();
+        loadUnassociatedStudentCount();
     }, [page, pageSize, searchTerm, filterCityId, sortBy, sortOrder]);
 
     const getCityName = (cityid: number) => {
@@ -200,7 +208,7 @@ const LocalitiesPage: React.FC = () => {
                 <button disabled={pageSize === 'all' || page >= Math.ceil(total / (typeof pageSize === 'number' ? pageSize : 1))} onClick={() => setPage(page + 1)} className="px-2 py-1 border rounded disabled:opacity-50">Next</button>
                 <span className="ml-auto text-sm text-gray-600">Total Localities: <span className="font-semibold">{total}</span></span>
                 <span className="ml-4 text-sm text-gray-600">Students in View: <span className="font-semibold">{totalStudentsInView}</span></span>
-                <span className="ml-4 text-sm text-red-600">Unassociated: <span className="font-semibold">{unassociatedStudents}</span></span>
+                <span className="ml-4 text-sm text-red-600">Unassociated: <span className="font-semibold">{unassociatedStudentCount}</span></span>
             </div>
 
             <div className="bg-white shadow rounded overflow-x-auto">

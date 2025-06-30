@@ -21,6 +21,10 @@ class CityService {
   async deleteCity(id: number) {
     return apiService.delete(`/api/cities/${id}`);
   }
+
+  async getUnassociatedCityStudentCount() {
+    return apiService.get('/api/cities/students/unassociated-city-count');
+  }
 }
 
 export default new CityService();

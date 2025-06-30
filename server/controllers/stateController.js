@@ -213,27 +213,18 @@ const deleteState = async (req, res) => {
     }
 };
 
-const getUnassociatedStudentCount = async (req, res) => {
+const getUnassociatedStateStudentCount = async (req, res) => {
     try {
         const pool = getDB();
-        // Assuming 0 or NULL means unassociated
         const result = await pool.request().query(`
-            SELECT COUNT(sid) as count
-            FROM [dbo].[Atm_T_StudentGurdianinfo88]
-            WHERE fathercountry IS NULL OR fathercountry = 0
-               OR fatherstate IS NULL OR fatherstate = 0
-               OR fathercity IS NULL OR fathercity = 0
+            SELECT COUNT(DISTINCT sid) as count 
+            FROM [dbo].[Atm_T_StudentGurdianinfo88] sg
+            LEFT JOIN [dbo].[Atm_M_State88] s ON sg.fatherstate = s.stateid
+            WHERE s.stateid IS NULL
         `);
-        res.status(200).json({
-            status: "success",
-            data: result.recordset[0]
-        });
+        res.status(200).json({ status: "success", data: result.recordset[0] });
     } catch (err) {
-        res.status(500).json({
-            status: "error",
-            message: err.message,
-            data: null
-        });
+        res.status(500).json({ status: "error", message: err.message });
     }
 };
 
@@ -244,5 +235,5 @@ module.exports = {
     updateState,
     deleteState,
     getstatesummary,
-    getUnassociatedStudentCount
+    getUnassociatedStateStudentCount
 };
