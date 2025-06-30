@@ -6,8 +6,9 @@ class LocalityService {
         return apiService.get('/api/localities');
     }
 
-    async getAllLocalitiesSum() {
-        return apiService.get('/api/localities/sum');
+    async getAllLocalitiesSum(params: any = {}) {
+        const query = new URLSearchParams(params).toString();
+        return apiService.get(`/api/localities/sum${query ? `?${query}` : ''}`);
     }
 
     async createLocality(data: any) {
@@ -20,6 +21,10 @@ class LocalityService {
 
     async deleteLocality(id: number) {
         return apiService.delete(`/api/localities/${id}`);
+    }
+
+    async getUnassociatedLocalityStudentCount() {
+        return apiService.get('/api/localitys/students/unassociated-locality-count');
     }
 }
 

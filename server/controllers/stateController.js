@@ -22,31 +22,67 @@ const getAllStates = async (req, res) => {
 const getstatesummary = async (req, res) => {
     try {
         const pool = getDB();
-        const result = await pool.request().query(`
-      SELECT 
-        s.stateid,
-        s.state,
-        s.conid,
-        s.status,
-        s.archive,
-        (
-          SELECT COUNT(DISTINCT id)
-          FROM [dbo].[Atm_M_Branch88] b
-          WHERE b.statename = s.stateid
-        ) AS TotalBranches,
-        (
-          SELECT COUNT(DISTINCT sg.sid)
-          FROM [dbo].[Atm_T_StudentGurdianinfo88] sg
-          WHERE sg.fatherstate = s.stateid
-        ) AS TotalStudents
-      FROM [dbo].[Atm_M_State88] s
-      ORDER BY s.stateid
-    `);
+        let { page = 1, limit = 10, search = '', conid, sortBy = 'stateid', sortOrder = 'ASC' } = req.query;
+        page = parseInt(page);
+        limit = limit === 'all' ? null : parseInt(limit);
+        search = search.trim();
+
+        // Whitelist valid sort columns
+        const validSortColumns = ['stateid', 'state', 'conid', 'TotalBranches', 'TotalStudents', 'status', 'archive'];
+        if (!validSortColumns.includes(sortBy)) {
+            sortBy = 'stateid';
+        }
+        if (!['ASC', 'DESC'].includes(sortOrder.toUpperCase())) {
+            sortOrder = 'ASC';
+        }
+
+        // Build WHERE clause for search and parent filter
+        const whereClauses = [];
+        if (search) {
+            whereClauses.push(`s.state LIKE '%${search.replace(/'/g, "''")}%'`);
+        }
+        if (conid) {
+            whereClauses.push(`s.conid = ${parseInt(conid)}`);
+        }
+        const whereClause = whereClauses.length ? `WHERE ${whereClauses.join(' AND ')}` : '';
+
+        // Get total count (filtered)
+        const countQuery = `SELECT COUNT(*) as total FROM [dbo].[Atm_M_State88] s ${whereClause}`;
+        const countResult = await pool.request().query(countQuery);
+        const total = countResult.recordset[0].total;
+
+        // Get total students in view
+        const studentCountQuery = `
+            SELECT COUNT(DISTINCT sg.sid) as totalStudents
+            FROM [dbo].[Atm_T_StudentGurdianinfo88] sg
+            JOIN [dbo].[Atm_M_State88] s ON sg.fatherstate = s.stateid
+            ${whereClause}`;
+        const studentCountResult = await pool.request().query(studentCountQuery);
+        const totalStudentsInView = studentCountResult.recordset[0]?.totalStudents || 0;
+
+        // Pagination logic
+        let query = `
+            SELECT 
+                s.stateid, s.state, s.conid, s.status, s.archive,
+                (SELECT COUNT(DISTINCT id) FROM [dbo].[Atm_M_Branch88] b WHERE b.statename = s.stateid) AS TotalBranches,
+                (SELECT COUNT(DISTINCT sg.sid) FROM [dbo].[Atm_T_StudentGurdianinfo88] sg WHERE sg.fatherstate = s.stateid) AS TotalStudents
+            FROM [dbo].[Atm_M_State88] s
+            ${whereClause}
+            ORDER BY ${sortBy} ${sortOrder}
+        `;
+        if (limit) {
+            const offset = (page - 1) * limit;
+            query += ` OFFSET ${offset} ROWS FETCH NEXT ${limit} ROWS ONLY`;
+        }
+
+        const result = await pool.request().query(query);
 
         res.status(200).json({
             status: "success",
             message: "States fetched successfully",
-            data: result.recordset
+            data: result.recordset,
+            total,
+            totalStudentsInView
         });
     } catch (err) {
         console.error("State API Error:", err);
@@ -57,9 +93,6 @@ const getstatesummary = async (req, res) => {
         });
     }
 };
-
-
-
 
 // Get state by ID
 const getStateById = async (req, res) => {
@@ -180,11 +213,27 @@ const deleteState = async (req, res) => {
     }
 };
 
+const getUnassociatedStateStudentCount = async (req, res) => {
+    try {
+        const pool = getDB();
+        const result = await pool.request().query(`
+            SELECT COUNT(DISTINCT sid) as count 
+            FROM [dbo].[Atm_T_StudentGurdianinfo88] sg
+            LEFT JOIN [dbo].[Atm_M_State88] s ON sg.fatherstate = s.stateid
+            WHERE s.stateid IS NULL
+        `);
+        res.status(200).json({ status: "success", data: result.recordset[0] });
+    } catch (err) {
+        res.status(500).json({ status: "error", message: err.message });
+    }
+};
+
 module.exports = {
     getAllStates,
     getStateById,
     createState,
     updateState,
     deleteState,
-    getstatesummary
+    getstatesummary,
+    getUnassociatedStateStudentCount
 };

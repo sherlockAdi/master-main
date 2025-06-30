@@ -5,10 +5,12 @@ const {
     getCountryById,
     createCountry,
     updateCountry,
-    deleteCountry
+    deleteCountry,
+    getUnassociatedCountryStudentCount
 } = require('../controllers/countryController');
 
 router.get('/', getAllCountries);
+router.get('/students/unassociated-country-count', getUnassociatedCountryStudentCount);
 router.get('/:id', getCountryById);
 router.post('/', createCountry);
 router.put('/:id', updateCountry);

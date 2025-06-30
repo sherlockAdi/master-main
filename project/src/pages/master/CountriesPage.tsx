@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { Plus, Search, Edit, Trash2 } from 'lucide-react';
+import { Plus, Search, Edit, Trash2, ArrowUp, ArrowDown } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
 import countryService from '../../services/countryService';
 import stateService from '../../services/stateService';
 
@@ -14,6 +15,7 @@ interface Country {
 }
 
 const CountriesPage: React.FC = () => {
+  const navigate = useNavigate();
   const [countries, setCountries] = useState<Country[]>([]);
   const [states, setStates] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
@@ -21,26 +23,50 @@ const CountriesPage: React.FC = () => {
   const [currentCountry, setCurrentCountry] = useState<Country | null>(null);
   const [formData, setFormData] = useState({ country: '', status: true, archive: false });
   const [searchTerm, setSearchTerm] = useState('');
+  const [page, setPage] = useState(1);
+  const [pageSize, setPageSize] = useState<number | 'all'>(10);
+  const [total, setTotal] = useState(0);
+  const [totalStudentsInView, setTotalStudentsInView] = useState(0);
+  const [unassociatedStudentCount, setUnassociatedStudentCount] = useState(0);
+  const [sortBy, setSortBy] = useState('conid');
+  const [sortOrder, setSortOrder] = useState('asc');
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    setPage(1); // Reset to first page on search
+  }, [searchTerm]);
 
   useEffect(() => {
     loadData();
-  }, []);
+    loadUnassociatedStudentCount();
+  }, [page, pageSize, searchTerm, sortBy, sortOrder]);
 
   const loadData = async () => {
     setLoading(true);
+    setError(null);
     try {
       const [countryRes, stateRes] = await Promise.all([
-        countryService.getAllCountries(),
+        countryService.getAllCountriesSum({ page, limit: pageSize, search: searchTerm, sortBy, sortOrder }),
         stateService.getAllStates()
       ]);
       setCountries(countryRes.data || []);
+      setTotal(countryRes.total || 0);
+      setTotalStudentsInView(countryRes.totalStudentsInView || 0);
       setStates(stateRes.data || []);
     } catch (error) {
       console.error('Error loading data:', error);
-      setCountries([]);
-      setStates([]);
+      setError('Failed to load data.');
     } finally {
       setLoading(false);
+    }
+  };
+
+  const loadUnassociatedStudentCount = async () => {
+    try {
+      const res = await countryService.getUnassociatedCountryStudentCount();
+      setUnassociatedStudentCount(res.data.count);
+    } catch (error) {
+      console.error("Failed to load unassociated student count:", error);
     }
   };
 
@@ -94,9 +120,35 @@ const CountriesPage: React.FC = () => {
     return states.some(s => s.conid === conid);
   };
 
-  const filteredCountries = countries.filter(c =>
-    c.country.toLowerCase().includes(searchTerm.toLowerCase())
-  );
+  const hasRelatedData = (country: Country) => {
+    const hasStatesData = hasStates(country.conid);
+    const hasBranches = parseInt(country.TotalBranches || '0') > 0;
+    const hasStudents = parseInt(country.TotalStudents || '0') > 0;
+    
+    return hasStatesData || hasBranches || hasStudents;
+  };
+
+  const getDeleteDisabledReason = (country: Country) => {
+    const reasons = [];
+    if (hasStates(country.conid)) reasons.push('states');
+    if (parseInt(country.TotalBranches || '0') > 0) reasons.push('branches');
+    if (parseInt(country.TotalStudents || '0') > 0) reasons.push('students');
+    
+    return reasons.length > 0 ? `Cannot delete - has linked ${reasons.join(', ')}` : 'Delete';
+  };
+
+  const handleSort = (column: string) => {
+    if (sortBy === column) {
+      setSortOrder(sortOrder === 'asc' ? 'desc' : 'asc');
+    } else {
+      setSortBy(column);
+      setSortOrder('asc');
+    }
+  };
+
+  const handleCountryClick = (countryId: number) => {
+    navigate(`/master/states?country=${countryId}`);
+  };
 
   return (
     <div className="space-y-6">
@@ -140,36 +192,90 @@ const CountriesPage: React.FC = () => {
           </div>
         ) : (
           <div className="overflow-x-auto">
+            <div className="flex items-center gap-4 p-4 bg-white rounded-lg shadow-sm">
+              <label className="mr-2">Rows per page:</label>
+              <select
+                value={pageSize}
+                onChange={e => {
+                  const val = e.target.value === 'all' ? 'all' : parseInt(e.target.value);
+                  setPageSize(val);
+                  setPage(1);
+                }}
+                className="border rounded px-2 py-1"
+              >
+                {[10, 20, 30, 50, 100].map(size => (
+                  <option key={size} value={size}>{size}</option>
+                ))}
+                <option value="all">All</option>
+              </select>
+              <button disabled={page === 1 || pageSize === 'all'} onClick={() => setPage(page - 1)} className="px-2 py-1 border rounded disabled:opacity-50">Prev</button>
+              <span>Page {page} of {pageSize === 'all' ? 1 : Math.max(1, Math.ceil(total / (typeof pageSize === 'number' ? pageSize : 1)))}</span>
+              <button disabled={pageSize === 'all' || page >= Math.ceil(total / (typeof pageSize === 'number' ? pageSize : 1))} onClick={() => setPage(page + 1)} className="px-2 py-1 border rounded disabled:opacity-50">Next</button>
+              <span className="ml-auto text-sm text-gray-600">Total Countries: <span className="font-semibold">{total}</span></span>
+              <span className="ml-4 text-sm text-gray-600">Students in View: <span className="font-semibold">{totalStudentsInView}</span></span>
+              <span className="ml-4 text-sm text-red-600">Unassociated: <span className="font-semibold">{unassociatedStudentCount}</span></span>
+            </div>
             <table className="w-full">
               <thead className="bg-gray-50 border-b border-gray-200">
                 <tr>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">ID</th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Country</th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    <button onClick={() => handleSort('conid')} className="flex items-center">
+                      ID {sortBy === 'conid' && (sortOrder === 'asc' ? <ArrowUp size={14} /> : <ArrowDown size={14} />)}
+                    </button>
+                  </th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    <button onClick={() => handleSort('country')} className="flex items-center">
+                      Country {sortBy === 'country' && (sortOrder === 'asc' ? <ArrowUp size={14} /> : <ArrowDown size={14} />)}
+                    </button>
+                  </th>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">State Count</th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Branch Count</th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Student Count</th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                     <button onClick={() => handleSort('TotalBranches')} className="flex items-center">
+                      Branch Count {sortBy === 'TotalBranches' && (sortOrder === 'asc' ? <ArrowUp size={14} /> : <ArrowDown size={14} />)}
+                    </button>
+                  </th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    <button onClick={() => handleSort('TotalStudents')} className="flex items-center">
+                      Student Count {sortBy === 'TotalStudents' && (sortOrder === 'asc' ? <ArrowUp size={14} /> : <ArrowDown size={14} />)}
+                    </button>
+                  </th>
 
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Archive</th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    <button onClick={() => handleSort('status')} className="flex items-center">
+                      Status {sortBy === 'status' && (sortOrder === 'asc' ? <ArrowUp size={14} /> : <ArrowDown size={14} />)}
+                    </button>
+                  </th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                     <button onClick={() => handleSort('archive')} className="flex items-center">
+                      Archive {sortBy === 'archive' && (sortOrder === 'asc' ? <ArrowUp size={14} /> : <ArrowDown size={14} />)}
+                    </button>
+                  </th>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
                 </tr>
               </thead>
               <tbody className="bg-white divide-y divide-gray-200">
-                {filteredCountries.length === 0 ? (
+                {countries.length === 0 ? (
                   <tr>
-                    <td colSpan={6} className="px-6 py-12 text-center text-gray-500">
+                    <td colSpan={8} className="px-6 py-12 text-center text-gray-500">
                       No countries found
                     </td>
                   </tr>
                 ) : (
-                  filteredCountries.map((country) => {
-                    const disabled = hasStates(country.conid);
+                  countries.map((country) => {
+                    const disabled = hasRelatedData(country);
                     const stateCount = states.filter(s => s.conid === country.conid).length;
 
                     return (
                       <tr key={country.conid} className="hover:bg-gray-50">
                         <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{country.conid}</td>
-                        <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">{country.country}</td>
+                        <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+                          <button
+                            onClick={() => handleCountryClick(country.conid)}
+                            className="text-blue-600 hover:text-blue-800 hover:underline cursor-pointer font-medium"
+                          >
+                            {country.country}
+                          </button>
+                        </td>
                         <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{stateCount}</td>
 
                         <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">{country?.TotalBranches}</td>
@@ -197,7 +303,7 @@ const CountriesPage: React.FC = () => {
                               onClick={() => !disabled && handleDelete(country.conid)}
                               disabled={disabled}
                               className={`p-1 rounded ${disabled ? 'text-gray-400 cursor-not-allowed' : 'text-red-600 hover:text-red-900'}`}
-                              title={disabled ? 'Cannot delete - country has linked states' : 'Delete'}
+                              title={getDeleteDisabledReason(country)}
                             >
                               <Trash2 size={16} />
                             </button>

@@ -1,13 +1,23 @@
 const express = require('express');
 const router = express.Router();
-const cityController = require('../controllers/cityController');
+const {
+    getAllCities,
+    getCityById,
+    createCity,
+    updateCity,
+    deleteCity,
+    getTopCities,
+    getAllCitiessum,
+    getUnassociatedCityStudentCount
+} = require('../controllers/cityController');
 
-router.get('/', cityController.getAllCities);
-router.get('/sum', cityController.getAllCitiessum);
-router.get('/top', cityController.getTopCities);
-router.get('/:id', cityController.getCityById);
-router.post('/', cityController.createCity);
-router.put('/:id', cityController.updateCity);
-router.delete('/:id', cityController.deleteCity);
+router.get('/', getAllCities);
+router.get('/sum', getAllCitiessum);
+router.get('/top', getTopCities);
+router.get('/students/unassociated-city-count', getUnassociatedCityStudentCount);
+router.get('/:id', getCityById);
+router.post('/', createCity);
+router.put('/:id', updateCity);
+router.delete('/:id', deleteCity);
 
 module.exports = router; 

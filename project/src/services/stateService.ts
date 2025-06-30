@@ -5,8 +5,9 @@ class StateService {
     return apiService.get('/api/states');
   }
 
-  async getAllStatessuma() {
-    return apiService.get('/api/states/sum');
+  async getAllStatessuma(params: any = {}) {
+    const query = new URLSearchParams(params).toString();
+    return apiService.get(`/api/states/sum${query ? `?${query}` : ''}`);
   }
 
   async createState(data: any) {
@@ -19,6 +20,15 @@ class StateService {
 
   async deleteState(id: number) {
     return apiService.delete(`/api/states/${id}`);
+  }
+
+  async getUnassociatedStateStudentCount() {
+    return apiService.get('/api/states/students/unassociated-state-count');
+  }
+
+  async getAllStatesSum(params: any = {}) {
+    const query = new URLSearchParams(params).toString();
+    return apiService.get(`/api/states/sum${query ? `?${query}` : ''}`);
   }
 }
 
