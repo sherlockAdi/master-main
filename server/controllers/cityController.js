@@ -22,7 +22,37 @@ const getAllCities = async (req, res) => {
 const getAllCitiessum = async (req, res) => {
     try {
         const pool = getDB();
-        const result = await pool.request().query(`
+        let { page = 1, limit = 10, search = '', stateid, sortBy = 'cityid', sortOrder = 'ASC' } = req.query;
+        page = parseInt(page);
+        limit = limit === 'all' ? null : parseInt(limit);
+        search = search.trim();
+
+        // Whitelist valid sort columns
+        const validSortColumns = ['cityid', 'city', 'stateid', 'TotalBranches', 'TotalStudents', 'status', 'archive'];
+        if (!validSortColumns.includes(sortBy)) {
+            sortBy = 'cityid';
+        }
+        if (!['ASC', 'DESC'].includes(sortOrder.toUpperCase())) {
+            sortOrder = 'ASC';
+        }
+
+        // Build WHERE clause for search and parent filter
+        const whereClauses = [];
+        if (search) {
+            whereClauses.push(`c.city LIKE '%${search.replace(/'/g, "''")}%'`);
+        }
+        if (stateid) {
+            whereClauses.push(`c.stateid = ${parseInt(stateid)}`);
+        }
+        const whereClause = whereClauses.length ? `WHERE ${whereClauses.join(' AND ')}` : '';
+
+        // Get total count (filtered)
+        const countQuery = `SELECT COUNT(*) as total FROM [dbo].[ATM_City_U88] c ${whereClause}`;
+        const countResult = await pool.request().query(countQuery);
+        const total = countResult.recordset[0].total;
+
+        // Pagination logic
+        let query = `
       SELECT 
         c.cityid,
         c.city,
@@ -43,13 +73,21 @@ const getAllCitiessum = async (req, res) => {
           WHERE sg.fathercity = c.cityid
         ) AS TotalStudents
       FROM [dbo].[ATM_City_U88] c
-      ORDER BY c.cityid
-    `);
+      ${whereClause}
+      ORDER BY ${sortBy} ${sortOrder}
+    `;
+        if (limit) {
+            const offset = (page - 1) * limit;
+            query += ` OFFSET ${offset} ROWS FETCH NEXT ${limit} ROWS ONLY`;
+        }
+
+        const result = await pool.request().query(query);
 
         res.status(200).json({
             status: "success",
             message: "Cities fetched successfully",
-            data: result.recordset
+            data: result.recordset,
+            total
         });
     } catch (err) {
         console.error("City API Error:", err);

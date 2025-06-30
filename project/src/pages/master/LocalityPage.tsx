@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { Plus, Search, Edit, Trash2 } from 'lucide-react';
+import { Plus, Search, Edit, Trash2, ArrowUp, ArrowDown } from 'lucide-react';
 import { useSearchParams } from 'react-router-dom';
 import localityService from '../../services/localityService';
 import cityService from '../../services/cityService';
@@ -23,19 +23,30 @@ const LocalitiesPage: React.FC = () => {
     const [localities, setLocalities] = useState<Locality[]>([]);
     const [cities, setCities] = useState<City[]>([]);
     const [searchTerm, setSearchTerm] = useState('');
-    const [filterCityId, setFilterCityId] = useState('');
+    const [filterCityId, setFilterCityId] = useState(() => searchParams.get('city') || '');
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
+    const [page, setPage] = useState(1);
+    const [pageSize, setPageSize] = useState<number | 'all'>(10);
+    const [total, setTotal] = useState(0);
+    const [sortBy, setSortBy] = useState('tehsil_id');
+    const [sortOrder, setSortOrder] = useState('asc');
 
     const loadData = async () => {
         setLoading(true);
         setError(null);
         try {
+            const params: any = { page, limit: pageSize, search: searchTerm, sortBy, sortOrder };
+            if (filterCityId) {
+                params.atmcityid = filterCityId;
+            }
+
             const [tehsilRes, cityRes] = await Promise.all([
-                localityService.getAllLocalitiesSum(),
+                localityService.getAllLocalitiesSum(params),
                 cityService.getAllCities()
             ]);
             setLocalities(tehsilRes.data || []);
+            setTotal(tehsilRes.total || 0);
             setCities(cityRes.data || []);
         } catch (err) {
             console.error(err);
@@ -46,16 +57,22 @@ const LocalitiesPage: React.FC = () => {
     };
 
     useEffect(() => {
-        loadData();
-    }, []);
+        // Sync filterCityId with URL param on mount and when URL changes
+        const cityParam = searchParams.get('city');
+        if (cityParam !== filterCityId) {
+            setFilterCityId(cityParam || '');
+            setPage(1);
+        }
+        // eslint-disable-next-line
+    }, [searchParams]);
 
     useEffect(() => {
-        // Check if there's a city parameter in the URL
-        const cityParam = searchParams.get('city');
-        if (cityParam) {
-            setFilterCityId(cityParam);
-        }
-    }, [searchParams]);
+        setPage(1); // Reset to first page on search or filter
+    }, [searchTerm, filterCityId]);
+
+    useEffect(() => {
+        loadData();
+    }, [page, pageSize, searchTerm, filterCityId, sortBy, sortOrder]);
 
     const getCityName = (cityid: number) => {
         const city = cities.find(c => c.cityid === cityid);
@@ -81,14 +98,9 @@ const LocalitiesPage: React.FC = () => {
         }
     };
 
-    const filteredLocalities = localities.filter(loc => {
-        const matchesSearch = loc.Tehsil_names.toLowerCase().includes(searchTerm.toLowerCase());
-        const matchesCity = filterCityId === '' || loc.atmcityid === parseInt(filterCityId);
-        return matchesSearch && matchesCity;
-    });
-
     const handleCityFilterChange = (cityId: string) => {
         setFilterCityId(cityId);
+        setPage(1);
         if (cityId) {
             setSearchParams({ city: cityId });
         } else {
@@ -99,6 +111,15 @@ const LocalitiesPage: React.FC = () => {
     const clearCityFilter = () => {
         setFilterCityId('');
         setSearchParams({});
+    };
+
+    const handleSort = (column: string) => {
+        if (sortBy === column) {
+            setSortOrder(sortOrder === 'asc' ? 'desc' : 'asc');
+        } else {
+            setSortBy(column);
+            setSortOrder('asc');
+        }
     };
 
     return (
@@ -152,26 +173,64 @@ const LocalitiesPage: React.FC = () => {
                 </div>
             </div>
 
+            <div className="flex items-center gap-4 p-4 bg-white rounded-lg shadow-sm">
+                <label className="mr-2">Rows per page:</label>
+                <select
+                    value={pageSize}
+                    onChange={e => {
+                        const val = e.target.value === 'all' ? 'all' : parseInt(e.target.value);
+                        setPageSize(val);
+                        setPage(1);
+                    }}
+                    className="border rounded px-2 py-1"
+                >
+                    {[10, 20, 30, 50, 100].map(size => (
+                        <option key={size} value={size}>{size}</option>
+                    ))}
+                    <option value="all">All</option>
+                </select>
+                <button disabled={page === 1 || pageSize === 'all'} onClick={() => setPage(page - 1)} className="px-2 py-1 border rounded disabled:opacity-50">Prev</button>
+                <span>Page {page} of {pageSize === 'all' ? 1 : Math.max(1, Math.ceil(total / (typeof pageSize === 'number' ? pageSize : 1)))}</span>
+                <button disabled={pageSize === 'all' || page >= Math.ceil(total / (typeof pageSize === 'number' ? pageSize : 1))} onClick={() => setPage(page + 1)} className="px-2 py-1 border rounded disabled:opacity-50">Next</button>
+                <span className="ml-4 text-gray-500">Total: {total}</span>
+            </div>
+
             <div className="bg-white shadow rounded overflow-x-auto">
                 {loading ? (
                     <div className="p-8 text-center text-gray-600">Loading...</div>
                 ) : error ? (
                     <div className="p-8 text-center text-red-600">{error}</div>
-                ) : filteredLocalities.length === 0 ? (
+                ) : localities.length === 0 ? (
                     <div className="p-8 text-center text-gray-500">No localities found</div>
                 ) : (
                     <table className="min-w-full">
                         <thead className="bg-gray-50">
                             <tr>
-                                <th className="text-left px-6 py-3 text-xs font-medium text-gray-500">ID</th>
-                                <th className="text-left px-6 py-3 text-xs font-medium text-gray-500">Locality</th>
-                                <th className="text-left px-6 py-3 text-xs font-medium text-gray-500">City</th>
-                                <th className="text-left px-6 py-3 text-xs font-medium text-gray-500">Students</th>
+                                <th className="text-left px-6 py-3 text-xs font-medium text-gray-500">
+                                     <button onClick={() => handleSort('tehsil_id')} className="flex items-center">
+                                        ID {sortBy === 'tehsil_id' && (sortOrder === 'asc' ? <ArrowUp size={14} /> : <ArrowDown size={14} />)}
+                                    </button>
+                                </th>
+                                <th className="text-left px-6 py-3 text-xs font-medium text-gray-500">
+                                     <button onClick={() => handleSort('Tehsil_names')} className="flex items-center">
+                                        Locality {sortBy === 'Tehsil_names' && (sortOrder === 'asc' ? <ArrowUp size={14} /> : <ArrowDown size={14} />)}
+                                    </button>
+                                </th>
+                                <th className="text-left px-6 py-3 text-xs font-medium text-gray-500">
+                                     <button onClick={() => handleSort('atmcityid')} className="flex items-center">
+                                        City {sortBy === 'atmcityid' && (sortOrder === 'asc' ? <ArrowUp size={14} /> : <ArrowDown size={14} />)}
+                                    </button>
+                                </th>
+                                <th className="text-left px-6 py-3 text-xs font-medium text-gray-500">
+                                    <button onClick={() => handleSort('TotalStudents')} className="flex items-center">
+                                        Students {sortBy === 'TotalStudents' && (sortOrder === 'asc' ? <ArrowUp size={14} /> : <ArrowDown size={14} />)}
+                                    </button>
+                                </th>
                                 <th className="text-left px-6 py-3 text-xs font-medium text-gray-500">Actions</th>
                             </tr>
                         </thead>
                         <tbody className="divide-y divide-gray-100">
-                            {filteredLocalities.map(loc => (
+                            {localities.map(loc => (
                                 <tr key={loc.tehsil_id} className="hover:bg-gray-50">
                                     <td className="px-6 py-4">{loc.tehsil_id}</td>
                                     <td className="px-6 py-4">{loc.Tehsil_names}</td>

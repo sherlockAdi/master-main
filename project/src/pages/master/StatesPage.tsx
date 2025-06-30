@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Plus, Search, Edit, Trash2 } from 'lucide-react';
+import { Plus, Search, Edit, Trash2, ArrowUp, ArrowDown } from 'lucide-react';
 import { useSearchParams, useNavigate } from 'react-router-dom';
 import stateService from '../../services/stateService';
 import countryService from '../../services/countryService';
@@ -37,31 +37,48 @@ const StatesPage: React.FC = () => {
   const [currentState, setCurrentState] = useState<State | null>(null);
   const [formData, setFormData] = useState({ conid: '', state: '', status: true, archive: false });
   const [searchTerm, setSearchTerm] = useState('');
-  const [filterCountryId, setFilterCountryId] = useState('');
+  const [filterCountryId, setFilterCountryId] = useState(() => searchParams.get('country') || '');
+  const [page, setPage] = useState(1);
+  const [pageSize, setPageSize] = useState<number | 'all'>(10);
+  const [total, setTotal] = useState(0);
+  const [sortBy, setSortBy] = useState('stateid');
+  const [sortOrder, setSortOrder] = useState('asc');
+
+  useEffect(() => {
+    // Sync filterCountryId with URL param on mount and when URL changes
+    const countryParam = searchParams.get('country');
+    if (countryParam !== filterCountryId) {
+      setFilterCountryId(countryParam || '');
+      setPage(1);
+    }
+    // eslint-disable-next-line
+  }, [searchParams]);
+
+  useEffect(() => {
+    setPage(1); // Reset to first page on search or filter
+  }, [searchTerm, filterCountryId]);
 
   useEffect(() => {
     loadData();
-  }, []);
-
-  useEffect(() => {
-    // Check if there's a country parameter in the URL
-    const countryParam = searchParams.get('country');
-    if (countryParam) {
-      setFilterCountryId(countryParam);
-    }
-  }, [searchParams]);
+  }, [page, pageSize, searchTerm, filterCountryId, sortBy, sortOrder]);
 
   const loadData = async () => {
     setLoading(true);
     try {
+      const params: any = { page, limit: pageSize, search: searchTerm, sortBy, sortOrder };
+      if (filterCountryId) {
+        params.conid = filterCountryId;
+      }
+
       const [stateRes, countryRes, cityRes] = await Promise.all([
-        stateService.getAllStatessuma(),
+        stateService.getAllStatessuma(params),
         countryService.getAllCountries(),
-        cityService.getAllCities() // Fetch cities
+        cityService.getAllCities()
       ]);
       setStates(stateRes.data || []);
+      setTotal(stateRes.total || 0);
       setCountries(countryRes.data || []);
-      setCities(cityRes.data || []); // Set cities
+      setCities(cityRes.data || []);
     } catch (error) {
       console.error('Error loading data:', error);
       setStates([]);
@@ -146,14 +163,18 @@ const StatesPage: React.FC = () => {
     return reasons.length > 0 ? `Cannot delete - has linked ${reasons.join(', ')}` : 'Delete';
   };
 
-  const filteredStates = states.filter(state => {
-    const matchesSearch = state.state.toLowerCase().includes(searchTerm.toLowerCase());
-    const matchesCountry = filterCountryId === '' || state.conid === parseInt(filterCountryId);
-    return matchesSearch && matchesCountry;
-  });
+  const handleSort = (column: string) => {
+    if (sortBy === column) {
+      setSortOrder(sortOrder === 'asc' ? 'desc' : 'asc');
+    } else {
+      setSortBy(column);
+      setSortOrder('asc');
+    }
+  };
 
   const handleCountryFilterChange = (countryId: string) => {
     setFilterCountryId(countryId);
+    setPage(1);
     if (countryId) {
       setSearchParams({ country: countryId });
     } else {
@@ -233,6 +254,29 @@ const StatesPage: React.FC = () => {
         </div>
       </div>
 
+      {/* Pagination */}
+      <div className="flex items-center gap-4 p-4 bg-white rounded-lg shadow-sm">
+        <label className="mr-2">Rows per page:</label>
+        <select
+          value={pageSize}
+          onChange={e => {
+            const val = e.target.value === 'all' ? 'all' : parseInt(e.target.value);
+            setPageSize(val);
+            setPage(1);
+          }}
+          className="border rounded px-2 py-1"
+        >
+          {[10, 20, 30, 50, 100].map(size => (
+            <option key={size} value={size}>{size}</option>
+          ))}
+          <option value="all">All</option>
+        </select>
+        <button disabled={page === 1 || pageSize === 'all'} onClick={() => setPage(page - 1)} className="px-2 py-1 border rounded disabled:opacity-50">Prev</button>
+        <span>Page {page} of {pageSize === 'all' ? 1 : Math.max(1, Math.ceil(total / (typeof pageSize === 'number' ? pageSize : 1)))}</span>
+        <button disabled={pageSize === 'all' || page >= Math.ceil(total / (typeof pageSize === 'number' ? pageSize : 1))} onClick={() => setPage(page + 1)} className="px-2 py-1 border rounded disabled:opacity-50">Next</button>
+        <span className="ml-4 text-gray-500">Total: {total}</span>
+      </div>
+
       {/* Table */}
       <div className="bg-white rounded-lg shadow-sm">
         {loading ? (
@@ -245,25 +289,53 @@ const StatesPage: React.FC = () => {
             <table className="w-full">
               <thead className="bg-gray-50 border-b border-gray-200">
                 <tr>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">ID</th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">State</th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Branch Count</th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Student Count </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Country</th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Archive</th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    <button onClick={() => handleSort('stateid')} className="flex items-center">
+                      ID {sortBy === 'stateid' && (sortOrder === 'asc' ? <ArrowUp size={14} /> : <ArrowDown size={14} />)}
+                    </button>
+                  </th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    <button onClick={() => handleSort('state')} className="flex items-center">
+                      State {sortBy === 'state' && (sortOrder === 'asc' ? <ArrowUp size={14} /> : <ArrowDown size={14} />)}
+                    </button>
+                  </th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    <button onClick={() => handleSort('TotalBranches')} className="flex items-center">
+                      Branch Count {sortBy === 'TotalBranches' && (sortOrder === 'asc' ? <ArrowUp size={14} /> : <ArrowDown size={14} />)}
+                    </button>
+                  </th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                     <button onClick={() => handleSort('TotalStudents')} className="flex items-center">
+                      Student Count {sortBy === 'TotalStudents' && (sortOrder === 'asc' ? <ArrowUp size={14} /> : <ArrowDown size={14} />)}
+                    </button>
+                  </th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    <button onClick={() => handleSort('conid')} className="flex items-center">
+                      Country {sortBy === 'conid' && (sortOrder === 'asc' ? <ArrowUp size={14} /> : <ArrowDown size={14} />)}
+                    </button>
+                  </th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    <button onClick={() => handleSort('status')} className="flex items-center">
+                      Status {sortBy === 'status' && (sortOrder === 'asc' ? <ArrowUp size={14} /> : <ArrowDown size={14} />)}
+                    </button>
+                  </th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    <button onClick={() => handleSort('archive')} className="flex items-center">
+                      Archive {sortBy === 'archive' && (sortOrder === 'asc' ? <ArrowUp size={14} /> : <ArrowDown size={14} />)}
+                    </button>
+                  </th>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
                 </tr>
               </thead>
               <tbody className="bg-white divide-y divide-gray-200">
-                {filteredStates.length === 0 ? (
+                {states.length === 0 ? (
                   <tr>
-                    <td colSpan={6} className="px-6 py-12 text-center text-gray-500">
+                    <td colSpan={8} className="px-6 py-12 text-center text-gray-500">
                       No states found
                     </td>
                   </tr>
                 ) : (
-                  filteredStates.map((state) => {
+                  states.map((state) => {
                     const disabled = hasRelatedData(state);
                     return (
                       <tr key={state.stateid} className="hover:bg-gray-50">

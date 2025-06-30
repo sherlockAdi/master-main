@@ -5,8 +5,9 @@ class CityService {
     return apiService.get('/api/cities');
   }
 
-  async getAllCitiessum() {
-    return apiService.get('/api/cities/sum');
+  async getAllCitiessum(params: any = {}) {
+    const query = new URLSearchParams(params).toString();
+    return apiService.get(`/api/cities/sum${query ? `?${query}` : ''}`);
   }
 
   async createCity(data: any) {

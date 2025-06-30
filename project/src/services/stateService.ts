@@ -5,8 +5,9 @@ class StateService {
     return apiService.get('/api/states');
   }
 
-  async getAllStatessuma() {
-    return apiService.get('/api/states/sum');
+  async getAllStatessuma(params: any = {}) {
+    const query = new URLSearchParams(params).toString();
+    return apiService.get(`/api/states/sum${query ? `?${query}` : ''}`);
   }
 
   async createState(data: any) {

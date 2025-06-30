@@ -164,7 +164,37 @@ const getTopTehsils = async (req, res) => {
 const getAllTehsilSum = async (req, res) => {
     try {
         const pool = getDB();
-        const result = await pool.request().query(`
+        let { page = 1, limit = 10, search = '', atmcityid, sortBy = 'tehsil_id', sortOrder = 'ASC' } = req.query;
+        page = parseInt(page);
+        limit = limit === 'all' ? null : parseInt(limit);
+        search = search.trim();
+
+        // Whitelist valid sort columns
+        const validSortColumns = ['tehsil_id', 'Tehsil_names', 'atmcityid', 'TotalStudents'];
+        if (!validSortColumns.includes(sortBy)) {
+            sortBy = 'tehsil_id';
+        }
+        if (!['ASC', 'DESC'].includes(sortOrder.toUpperCase())) {
+            sortOrder = 'ASC';
+        }
+
+        // Build WHERE clause for search and parent filter
+        const whereClauses = [];
+        if (search) {
+            whereClauses.push(`t.Tehsil_names LIKE '%${search.replace(/'/g, "''")}%'`);
+        }
+        if (atmcityid) {
+            whereClauses.push(`t.atmcityid = ${parseInt(atmcityid)}`);
+        }
+        const whereClause = whereClauses.length ? `WHERE ${whereClauses.join(' AND ')}` : '';
+
+        // Get total count (filtered)
+        const countQuery = `SELECT COUNT(*) as total FROM [dbo].[ATM_UPSDM_Tehsil_U88] t ${whereClause}`;
+        const countResult = await pool.request().query(countQuery);
+        const total = countResult.recordset[0].total;
+
+        // Pagination logic
+        let query = `
             SELECT 
                 t.tehsil_id,
                 t.district_code,
@@ -177,13 +207,21 @@ const getAllTehsilSum = async (req, res) => {
                     WHERE sg.tehsile_code = t.tehsil_id
                 ) AS TotalStudents
             FROM [dbo].[ATM_UPSDM_Tehsil_U88] t
-            ORDER BY t.tehsil_id
-        `);
+            ${whereClause}
+            ORDER BY ${sortBy} ${sortOrder}
+        `;
+        if (limit) {
+            const offset = (page - 1) * limit;
+            query += ` OFFSET ${offset} ROWS FETCH NEXT ${limit} ROWS ONLY`;
+        }
+
+        const result = await pool.request().query(query);
 
         res.status(200).json({
             status: "success",
             message: "Tehsils with summary fetched successfully",
-            data: result.recordset
+            data: result.recordset,
+            total
         });
     } catch (err) {
         console.error("Tehsil Summary API Error:", err);
