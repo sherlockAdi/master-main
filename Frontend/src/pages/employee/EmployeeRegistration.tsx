@@ -310,82 +310,33 @@ const EmployeeRegistration: React.FC = () => {
 
   // Section rendering helper
   const renderSection = (section: string) => {
-    return (
-      <div className="space-y-4">
-        {/* Group country, state, city in a row for alignment */}
-        {section === 'Personal' && (
-          <div className="bg-white rounded-xl shadow-md p-6 mb-4 border border-gray-200">
-            <h3 className="text-lg font-semibold text-blue-700 mb-4">Location Details</h3>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-              {/* Country */}
-              <div className="flex flex-col">
-                <label className="font-medium text-gray-700 mb-1">Country</label>
-                <select
-                  name="countryname"
-                  value={form.countryname}
-                  onChange={handleChange}
-                  className="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-400 transition-all duration-150 focus:border-blue-500 hover:border-blue-400 bg-white shadow-sm"
-                  required
-                >
-                  <option value="">Select Country</option>
-                  {countries.length === 0 && <option disabled>No countries available</option>}
-                  {countries.map((c: any) => (
-                    <option key={c.conid ?? c.id} value={c.conid ?? c.id} className={String(form.countryname) === String(c.conid ?? c.id) ? 'bg-blue-100 font-bold' : ''}>
-                      {c.country}
-                    </option>
-                  ))}
-                </select>
-              </div>
-              {/* State */}
-              <div className="flex flex-col">
-                <label className="font-medium text-gray-700 mb-1">State</label>
-                <select
-                  name="statename"
-                  value={form.statename}
-                  onChange={handleChange}
-                  className="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-400 transition-all duration-150 focus:border-blue-500 hover:border-blue-400 bg-white shadow-sm"
-                  disabled={!form.countryname}
-                  required
-                >
-                  <option value="">{form.countryname ? 'Select State' : 'Select Country First'}</option>
-                  {filteredStates.length === 0 && form.countryname && <option disabled>No states available</option>}
-                  {filteredStates.map((s: any) => (
-                    <option key={s.stateid ?? s.id} value={s.stateid ?? s.id}>{s.state || s.name}</option>
-                  ))}
-                </select>
-              </div>
-              {/* City */}
-              <div className="flex flex-col">
-                <label className="font-medium text-gray-700 mb-1">City</label>
-                <select
-                  name="cityname"
-                  value={form.cityname}
-                  onChange={handleChange}
-                  className="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-400 transition-all duration-150 focus:border-blue-500 hover:border-blue-400 bg-white shadow-sm"
-                  disabled={!form.statename}
-                  required
-                >
-                  <option value="">{form.statename ? 'Select City' : 'Select State First'}</option>
-                  {filteredCities.length === 0 && form.statename && <option disabled>No cities available</option>}
-                  {filteredCities.map((c: any) => (
-                    <option key={c.cityid ?? c.id} value={c.cityid ?? c.id}>{c.city || c.name}</option>
-                  ))}
-                </select>
-              </div>
-            </div>
-          </div>
-        )}
-        {/* Group department/designation in a row for alignment (Employment section) */}
-        {section === 'Employment' && (
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+    if (section === 'Employment') {
+      // Custom Employment panel
+      // 1. Department & Designation
+      // 2. Date fields
+      // 3. Other fields (not boolean/date/dropdown)
+      // 4. All toggles at the end
+      const dateFieldsEmp = ['dateofjoining', 'logindate', 'dateOfRelieving'];
+      const booleanFieldsEmp = sectionFields['Employment'].filter(f => booleanFields.includes(f));
+      const dropdownFieldsEmp = sectionFields['Employment'].filter(f => dropdownFields[f]);
+      const otherFieldsEmp = sectionFields['Employment'].filter(f =>
+        !['department', 'designation', ...dateFieldsEmp, ...booleanFieldsEmp].includes(f) && !dropdownFields[f]
+      );
+      return (
+        <div className="col-span-full bg-blue-50/60 rounded-xl p-6 mb-6 shadow-inner border border-blue-100">
+          <h3 className="text-xl font-bold text-blue-700 mb-6 flex items-center gap-2">
+            <span className="inline-block w-2 h-6 bg-blue-400 rounded-full mr-2"></span>
+            Employment Details
+          </h3>
+          {/* Department & Designation */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
             {/* Department */}
-            <div className="flex flex-col">
-              <label className="font-medium text-gray-700">Department</label>
+            <div className="relative">
               <select
                 name="department"
                 value={form.department}
                 onChange={handleChange}
-                className="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-400 transition-all duration-150 focus:border-blue-500 hover:border-blue-400 bg-white shadow-sm"
+                className="peer px-4 py-3 border border-blue-300 rounded-xl bg-white/80 focus:ring-2 focus:ring-blue-400 focus:border-blue-500 w-full text-base transition-all font-semibold"
                 required
               >
                 <option value="">Select Department</option>
@@ -394,15 +345,17 @@ const EmployeeRegistration: React.FC = () => {
                   <option key={d.id} value={d.id}>{d.DeptName}</option>
                 ))}
               </select>
+              <label className="absolute left-4 top-2 text-blue-700 text-base bg-white/80 px-1 transition-all duration-200 pointer-events-none peer-focus:-top-4 peer-focus:text-xs peer-focus:text-blue-600 peer-[:not(:placeholder-shown)]:-top-4 peer-[:not(:placeholder-shown)]:text-xs peer-[:not(:placeholder-shown)]:text-blue-600 font-bold">
+                Department
+              </label>
             </div>
             {/* Designation */}
-            <div className="flex flex-col">
-              <label className="font-medium text-gray-700">Designation</label>
+            <div className="relative">
               <select
                 name="designation"
                 value={form.designation}
                 onChange={handleChange}
-                className="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-400 transition-all duration-150 focus:border-blue-500 hover:border-blue-400 bg-white shadow-sm"
+                className="peer px-4 py-3 border border-blue-300 rounded-xl bg-white/80 focus:ring-2 focus:ring-blue-400 focus:border-blue-500 w-full text-base transition-all font-semibold"
                 disabled={!form.department}
                 required
               >
@@ -416,73 +369,244 @@ const EmployeeRegistration: React.FC = () => {
                       <option key={d.id} value={d.id}>{d.Desgname}</option>
                     ))}
               </select>
+              <label className="absolute left-4 top-2 text-blue-700 text-base bg-white/80 px-1 transition-all duration-200 pointer-events-none peer-focus:-top-4 peer-focus:text-xs peer-focus:text-blue-600 peer-[:not(:placeholder-shown)]:-top-4 peer-[:not(:placeholder-shown)]:text-xs peer-[:not(:placeholder-shown)]:text-blue-600 font-bold">
+                Designation
+              </label>
             </div>
           </div>
-        )}
-        {/* Render all other fields as before */}
-        {sectionFields[section].map((field: string) => {
-          // Skip country, state, city, department, designation (already rendered above)
-          if (["countryname", "statename", "cityname", "department", "designation"].includes(field)) return null;
-          if (booleanFields.includes(field)) {
-            return (
-              <label key={field} className="flex items-center gap-3">
-                <input
-                  type="checkbox"
-                  name={field}
-                  checked={!!form[field]}
-                  onChange={handleChange}
-                  className="form-checkbox h-5 w-5 text-blue-600"
-                />
-                <span className="text-gray-700 font-medium capitalize">{field}</span>
-              </label>
-            );
-          }
-          if (dateFields.includes(field)) {
-            return (
-              <div key={field} className="flex flex-col">
-                <label className="font-medium text-gray-700 capitalize">{field}</label>
+          {/* Date fields */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+            {dateFieldsEmp.map(field => (
+              <div key={field} className="relative">
                 <input
                   type="date"
                   name={field}
                   value={form[field] || ''}
                   onChange={handleChange}
-                  className="px-4 py-2 border border-gray-300 rounded-lg"
+                  className="peer px-4 py-3 border border-gray-300 rounded-xl bg-white/60 focus:ring-2 focus:ring-blue-400 focus:border-blue-500 w-full text-base transition-all"
+                  placeholder=" "
                 />
+                <label className="absolute left-4 top-2 text-gray-500 text-base bg-white/80 px-1 transition-all duration-200 pointer-events-none peer-focus:-top-4 peer-focus:text-xs peer-focus:text-blue-600 peer-[:not(:placeholder-shown)]:-top-4 peer-[:not(:placeholder-shown)]:text-xs peer-[:not(:placeholder-shown)]:text-blue-600">
+                  {field}
+                </label>
               </div>
-            );
-          }
-          if (dropdownFields[field]) {
-            return (
-              <div key={field} className="flex flex-col">
-                <label className="font-medium text-gray-700 capitalize">{field}</label>
+            ))}
+          </div>
+          {/* Other fields (not boolean/date/dropdown) */}
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-6">
+            {otherFieldsEmp.map(field => (
+              <div key={field} className="relative">
+                <input
+                  type={typeof form[field] === 'number' ? 'number' : 'text'}
+                  name={field}
+                  value={form[field] || ''}
+                  onChange={handleChange}
+                  className="peer px-4 py-3 border border-gray-300 rounded-xl bg-white/60 focus:ring-2 focus:ring-blue-400 focus:border-blue-500 w-full text-base transition-all placeholder-transparent"
+                  placeholder={field}
+                />
+                <label className="absolute left-4 top-2 text-gray-500 text-base bg-white/80 px-1 transition-all duration-200 pointer-events-none peer-focus:-top-4 peer-focus:text-xs peer-focus:text-blue-600 peer-[:not(:placeholder-shown)]:-top-4 peer-[:not(:placeholder-shown)]:text-xs peer-[:not(:placeholder-shown)]:text-blue-600">
+                  {field}
+                </label>
+              </div>
+            ))}
+            {/* Dropdown fields (not department/designation) */}
+            {dropdownFieldsEmp.map(field => (
+              <div key={field} className="relative">
                 <select
                   name={field}
                   value={form[field] || ''}
                   onChange={handleChange}
-                  className="px-4 py-2 border border-gray-300 rounded-lg"
+                  className="peer px-4 py-3 border border-gray-300 rounded-xl bg-white/60 focus:ring-2 focus:ring-blue-400 focus:border-blue-500 w-full text-base transition-all"
                 >
                   <option value="">Select {field}</option>
                   {dropdownFields[field].map((opt: string) => (
                     <option key={opt} value={opt}>{opt}</option>
                   ))}
                 </select>
+                <label className="absolute left-4 top-2 text-gray-500 text-base bg-white/80 px-1 transition-all duration-200 pointer-events-none peer-focus:-top-4 peer-focus:text-xs peer-focus:text-blue-600 peer-[:not(:placeholder-shown)]:-top-4 peer-[:not(:placeholder-shown)]:text-xs peer-[:not(:placeholder-shown)]:text-blue-600">
+                  {field}
+                </label>
               </div>
-            );
-          }
-          // Default: text/number input
-          return (
-            <div key={field} className="flex flex-col">
-              <label className="font-medium text-gray-700 capitalize">{field}</label>
+            ))}
+          </div>
+          {/* All toggles at the end */}
+          <div className="flex flex-wrap gap-6 mt-6">
+            {booleanFieldsEmp.map(field => (
+              <div key={field} className="flex flex-col justify-end">
+                <label className="flex items-center gap-3 cursor-pointer select-none">
+                  <span className="text-gray-700 font-medium capitalize flex-1">{field}</span>
+                  <span className="relative inline-block w-12 h-6">
+                    <input
+                      type="checkbox"
+                      name={field}
+                      checked={!!form[field]}
+                      onChange={handleChange}
+                      className="peer opacity-0 w-12 h-6 absolute left-0 top-0 z-10 cursor-pointer"
+                    />
+                    <span className="block w-12 h-6 bg-gray-300 rounded-full transition peer-checked:bg-blue-500"></span>
+                    <span className="absolute left-1 top-1 w-4 h-4 bg-white rounded-full shadow transition-transform duration-200 peer-checked:translate-x-6"></span>
+                  </span>
+                </label>
+              </div>
+            ))}
+          </div>
+        </div>
+      );
+    }
+    // For all other sections, use a card panel style
+    // Group toggles at the end if present
+    const booleanFieldsSection = sectionFields[section].filter(f => booleanFields.includes(f));
+    const dateFieldsSection = sectionFields[section].filter(f => dateFields.includes(f));
+    const dropdownFieldsSection = sectionFields[section].filter(f => dropdownFields[f]);
+    const otherFieldsSection = sectionFields[section].filter(f =>
+      ![...booleanFieldsSection, ...dateFieldsSection, ...dropdownFieldsSection, 'countryname', 'statename', 'cityname'].includes(f)
+    );
+    return (
+      <div className="col-span-full bg-blue-50/60 rounded-xl p-6 mb-6 shadow-inner border border-blue-100">
+        <h3 className="text-xl font-bold text-blue-700 mb-6 flex items-center gap-2">
+          <span className="inline-block w-2 h-6 bg-blue-400 rounded-full mr-2"></span>
+          {section} Details
+        </h3>
+        {/* Special block for country/state/city in Personal */}
+        {section === 'Personal' && (
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
+            {/* Country */}
+            <div className="relative">
+              <select
+                name="countryname"
+                value={form.countryname}
+                onChange={handleChange}
+                className="peer px-4 py-3 border border-gray-300 rounded-xl bg-white/60 focus:ring-2 focus:ring-blue-400 focus:border-blue-500 w-full text-base transition-all"
+                required
+              >
+                <option value="">Select Country</option>
+                {countries.length === 0 && <option disabled>No countries available</option>}
+                {countries.map((c: any) => (
+                  <option key={c.conid ?? c.id} value={c.conid ?? c.id}>{c.country}</option>
+                ))}
+              </select>
+              <label className="absolute left-4 top-2 text-gray-500 text-base bg-white/80 px-1 transition-all duration-200 pointer-events-none peer-focus:-top-4 peer-focus:text-xs peer-focus:text-blue-600 peer-[:not(:placeholder-shown)]:-top-4 peer-[:not(:placeholder-shown)]:text-xs peer-[:not(:placeholder-shown)]:text-blue-600">
+                Country
+              </label>
+            </div>
+            {/* State */}
+            <div className="relative">
+              <select
+                name="statename"
+                value={form.statename}
+                onChange={handleChange}
+                className="peer px-4 py-3 border border-gray-300 rounded-xl bg-white/60 focus:ring-2 focus:ring-blue-400 focus:border-blue-500 w-full text-base transition-all"
+                disabled={!form.countryname}
+                required
+              >
+                <option value="">{form.countryname ? 'Select State' : 'Select Country First'}</option>
+                {filteredStates.length === 0 && form.countryname && <option disabled>No states available</option>}
+                {filteredStates.map((s: any) => (
+                  <option key={s.stateid ?? s.id} value={s.stateid ?? s.id}>{s.state || s.name}</option>
+                ))}
+              </select>
+              <label className="absolute left-4 top-2 text-gray-500 text-base bg-white/80 px-1 transition-all duration-200 pointer-events-none peer-focus:-top-4 peer-focus:text-xs peer-focus:text-blue-600 peer-[:not(:placeholder-shown)]:-top-4 peer-[:not(:placeholder-shown)]:text-xs peer-[:not(:placeholder-shown)]:text-blue-600">
+                State
+              </label>
+            </div>
+            {/* City */}
+            <div className="relative">
+              <select
+                name="cityname"
+                value={form.cityname}
+                onChange={handleChange}
+                className="peer px-4 py-3 border border-gray-300 rounded-xl bg-white/60 focus:ring-2 focus:ring-blue-400 focus:border-blue-500 w-full text-base transition-all"
+                disabled={!form.statename}
+                required
+              >
+                <option value="">{form.statename ? 'Select City' : 'Select State First'}</option>
+                {filteredCities.length === 0 && form.statename && <option disabled>No cities available</option>}
+                {filteredCities.map((c: any) => (
+                  <option key={c.cityid ?? c.id} value={c.cityid ?? c.id}>{c.city}</option>
+                ))}
+              </select>
+              <label className="absolute left-4 top-2 text-gray-500 text-base bg-white/80 px-1 transition-all duration-200 pointer-events-none peer-focus:-top-4 peer-focus:text-xs peer-focus:text-blue-600 peer-[:not(:placeholder-shown)]:-top-4 peer-[:not(:placeholder-shown)]:text-xs peer-[:not(:placeholder-shown)]:text-blue-600">
+                City
+              </label>
+            </div>
+          </div>
+        )}
+        {/* Main grid for all other fields */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          {otherFieldsSection.map(field => (
+            <div key={field} className="relative">
               <input
                 type={typeof form[field] === 'number' ? 'number' : 'text'}
                 name={field}
                 value={form[field] || ''}
                 onChange={handleChange}
-                className="px-4 py-2 border border-gray-300 rounded-lg"
+                className="peer px-4 py-3 border border-gray-300 rounded-xl bg-white/60 focus:ring-2 focus:ring-blue-400 focus:border-blue-500 w-full text-base transition-all placeholder-transparent"
+                placeholder={field}
               />
+              <label className="absolute left-4 top-2 text-gray-500 text-base bg-white/80 px-1 transition-all duration-200 pointer-events-none peer-focus:-top-4 peer-focus:text-xs peer-focus:text-blue-600 peer-[:not(:placeholder-shown)]:-top-4 peer-[:not(:placeholder-shown)]:text-xs peer-[:not(:placeholder-shown)]:text-blue-600">
+                {field}
+              </label>
             </div>
-          );
-        })}
+          ))}
+          {/* Dropdown fields */}
+          {dropdownFieldsSection.map(field => (
+            <div key={field} className="relative">
+              <select
+                name={field}
+                value={form[field] || ''}
+                onChange={handleChange}
+                className="peer px-4 py-3 border border-gray-300 rounded-xl bg-white/60 focus:ring-2 focus:ring-blue-400 focus:border-blue-500 w-full text-base transition-all"
+              >
+                <option value="">Select {field}</option>
+                {dropdownFields[field].map((opt: string) => (
+                  <option key={opt} value={opt}>{opt}</option>
+                ))}
+              </select>
+              <label className="absolute left-4 top-2 text-gray-500 text-base bg-white/80 px-1 transition-all duration-200 pointer-events-none peer-focus:-top-4 peer-focus:text-xs peer-focus:text-blue-600 peer-[:not(:placeholder-shown)]:-top-4 peer-[:not(:placeholder-shown)]:text-xs peer-[:not(:placeholder-shown)]:text-blue-600">
+                {field}
+              </label>
+            </div>
+          ))}
+          {/* Date fields */}
+          {dateFieldsSection.map(field => (
+            <div key={field} className="relative">
+              <input
+                type="date"
+                name={field}
+                value={form[field] || ''}
+                onChange={handleChange}
+                className="peer px-4 py-3 border border-gray-300 rounded-xl bg-white/60 focus:ring-2 focus:ring-blue-400 focus:border-blue-500 w-full text-base transition-all"
+                placeholder=" "
+              />
+              <label className="absolute left-4 top-2 text-gray-500 text-base bg-white/80 px-1 transition-all duration-200 pointer-events-none peer-focus:-top-4 peer-focus:text-xs peer-focus:text-blue-600 peer-[:not(:placeholder-shown)]:-top-4 peer-[:not(:placeholder-shown)]:text-xs peer-[:not(:placeholder-shown)]:text-blue-600">
+                {field}
+              </label>
+            </div>
+          ))}
+        </div>
+        {/* All toggles at the end */}
+        {booleanFieldsSection.length > 0 && (
+          <div className="flex flex-wrap gap-6 mt-6">
+            {booleanFieldsSection.map(field => (
+              <div key={field} className="flex flex-col justify-end">
+                <label className="flex items-center gap-3 cursor-pointer select-none">
+                  <span className="text-gray-700 font-medium capitalize flex-1">{field}</span>
+                  <span className="relative inline-block w-12 h-6">
+                    <input
+                      type="checkbox"
+                      name={field}
+                      checked={!!form[field]}
+                      onChange={handleChange}
+                      className="peer opacity-0 w-12 h-6 absolute left-0 top-0 z-10 cursor-pointer"
+                    />
+                    <span className="block w-12 h-6 bg-gray-300 rounded-full transition peer-checked:bg-blue-500"></span>
+                    <span className="absolute left-1 top-1 w-4 h-4 bg-white rounded-full shadow transition-transform duration-200 peer-checked:translate-x-6"></span>
+                  </span>
+                </label>
+              </div>
+            ))}
+          </div>
+        )}
       </div>
     );
   };

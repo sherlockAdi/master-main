@@ -44,33 +44,36 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
   const isMasterActive = masterMenuItems.some(item => location.pathname === item.path);
 
   return (
-    <div className="min-h-screen bg-gray-50 flex">
+    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-blue-100 flex">
       {/* Sidebar */}
-      <div className={`fixed inset-y-0 left-0 z-50 w-64 bg-slate-900 text-white transform ${sidebarOpen ? 'translate-x-0' : '-translate-x-full'} transition-transform duration-300 ease-in-out lg:translate-x-0 lg:static lg:inset-0`}>
-        <div className="flex items-center justify-between h-16 px-6 border-b border-slate-700">
-          <h1 className="text-xl font-bold">Employee Portal</h1>
+      <div className={`fixed inset-y-0 left-0 z-50 w-64 bg-white/80 backdrop-blur-lg shadow-2xl border-r border-blue-100 text-slate-900 transform ${sidebarOpen ? 'translate-x-0' : '-translate-x-full'} transition-transform duration-300 ease-in-out lg:translate-x-0 lg:static lg:inset-0 flex flex-col`}
+        style={{ minHeight: '100vh' }}>
+        {/* Logo/Avatar */}
+        <div className="flex items-center justify-between h-16 px-6 border-b border-blue-100 bg-white/60 backdrop-blur-lg sticky top-0 z-50">
+          <div className="flex items-center gap-3">
+            <img src="/logo192.png" alt="Logo" className="w-8 h-8 rounded-full shadow" />
+            <h1 className="text-xl font-bold tracking-tight">Employee Portal</h1>
+          </div>
           <button
             onClick={() => setSidebarOpen(false)}
-            className="lg:hidden text-white hover:text-gray-300"
+            className="lg:hidden text-slate-700 hover:text-blue-600"
           >
             <X size={24} />
           </button>
         </div>
-
-        <nav className="mt-6 px-4">
+        <nav className="mt-6 px-4 flex-1 overflow-y-auto pb-8">
           <Link
             to="/"
-            className={`flex items-center px-4 py-3 text-sm font-medium rounded-lg mb-2 transition-colors ${isActivePath('/') ? 'bg-blue-600 text-white' : 'text-gray-300 hover:bg-slate-800 hover:text-white'}`}
+            className={`flex items-center px-4 py-3 text-sm font-medium rounded-lg mb-2 transition-colors ${isActivePath('/') ? 'bg-blue-600 text-white' : 'text-slate-700 hover:bg-blue-100 hover:text-blue-700'}`}
           >
             <Home className="mr-3" size={20} />
             Dashboard
           </Link>
-
           {/* Employee Portal Dropdown */}
           <div className="mb-2">
             <button
               onClick={() => setEmployeeMenuOpen(!employeeMenuOpen)}
-              className={`flex items-center justify-between w-full px-4 py-3 text-sm font-medium rounded-lg transition-colors ${location.pathname.startsWith('/employee-portal') ? 'bg-blue-600 text-white' : 'text-gray-300 hover:bg-slate-800 hover:text-white'}`}
+              className={`flex items-center justify-between w-full px-4 py-3 text-sm font-medium rounded-lg transition-colors ${location.pathname.startsWith('/employee-portal') ? 'bg-blue-600 text-white' : 'text-slate-700 hover:bg-blue-100 hover:text-blue-700'}`}
             >
               <span className="flex items-center">
                 <Users className="mr-3" size={20} />
@@ -87,7 +90,7 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
                   <Link
                     key={item.path}
                     to={item.path}
-                    className={`flex items-center px-4 py-2 text-sm rounded-lg transition-colors ${isActivePath(item.path) ? 'bg-blue-500 text-white' : 'text-gray-400 hover:bg-slate-800 hover:text-white'}`}
+                    className={`flex items-center px-4 py-2 text-sm rounded-lg transition-colors ${isActivePath(item.path) ? 'bg-blue-500 text-white' : 'text-slate-600 hover:bg-blue-100 hover:text-blue-700'}`}
                   >
                     <item.icon className="mr-3" size={16} />
                     {item.name}
@@ -96,12 +99,11 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
               </div>
             )}
           </div>
-
           {/* Master Menu */}
           <div className="mb-2">
             <button
               onClick={() => setMasterMenuOpen(!masterMenuOpen)}
-              className={`flex items-center justify-between w-full px-4 py-3 text-sm font-medium rounded-lg transition-colors ${isMasterActive ? 'bg-blue-600 text-white' : 'text-gray-300 hover:bg-slate-800 hover:text-white'}`}
+              className={`flex items-center justify-between w-full px-4 py-3 text-sm font-medium rounded-lg transition-colors ${isMasterActive ? 'bg-blue-600 text-white' : 'text-slate-700 hover:bg-blue-100 hover:text-blue-700'}`}
             >
               <span className="flex items-center">
                 <Building2 className="mr-3" size={20} />
@@ -112,14 +114,13 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
                 size={16}
               />
             </button>
-
             {masterMenuOpen && (
               <div className="ml-6 mt-2 space-y-1">
                 {masterMenuItems.map((item) => (
                   <Link
                     key={item.path}
                     to={item.path}
-                    className={`flex items-center px-4 py-2 text-sm rounded-lg transition-colors ${isActivePath(item.path) ? 'bg-blue-500 text-white' : 'text-gray-400 hover:bg-slate-800 hover:text-white'}`}
+                    className={`flex items-center px-4 py-2 text-sm rounded-lg transition-colors ${isActivePath(item.path) ? 'bg-blue-500 text-white' : 'text-slate-600 hover:bg-blue-100 hover:text-blue-700'}`}
                   >
                     <item.icon className="mr-3" size={16} />
                     {item.name}
@@ -130,7 +131,6 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
           </div>
         </nav>
       </div>
-
       {/* Overlay for mobile */}
       {sidebarOpen && (
         <div
@@ -138,26 +138,23 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
           onClick={() => setSidebarOpen(false)}
         />
       )}
-
       {/* Main Content */}
       <div className="flex-1 lg:ml-0">
         {/* Top Bar */}
-        <header className="bg-white shadow-sm border-b border-gray-200 h-16 flex items-center justify-between px-6">
+        <header className="sticky top-0 z-40 bg-white/80 backdrop-blur-lg shadow-md border-b border-blue-100 h-16 flex items-center justify-between px-6">
           <button
             onClick={() => setSidebarOpen(true)}
-            className="lg:hidden text-gray-600 hover:text-gray-900"
+            className="lg:hidden text-blue-600 hover:text-blue-900"
           >
             <Menu size={24} />
           </button>
           <div className="flex items-center space-x-4">
-            <div className="text-sm text-gray-600">
-              Welcome to Employee Portal
-            </div>
+            <img src="/logo192.png" alt="Logo" className="w-8 h-8 rounded-full shadow" />
+            <div className="text-lg font-semibold text-blue-700 tracking-tight">Welcome to Employee Portal</div>
           </div>
         </header>
-
         {/* Page Content */}
-        <main className="p-6">
+        <main className="p-6 pt-10 md:pt-12">
           {children}
         </main>
       </div>
