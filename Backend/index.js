@@ -10,6 +10,7 @@ const cityRoutes = require('./routes/cityRoutes');
 const collegeRoutes = require('./routes/collegeRoutes');
 const branchRoutes = require('./routes/branchRoutes');
 const localityRoutes = require('./routes/localityRoutes');
+const employeeRoutes = require('./routes/employeeRoutes');
 
 console.log('countryRoutes:', typeof countryRoutes);
 console.log('stateRoutes:', typeof stateRoutes);
@@ -18,6 +19,8 @@ console.log('designationRoutes:', typeof designationRoutes);
 console.log('cityRoutes:', typeof cityRoutes);
 console.log('collegeRoutes:', typeof collegeRoutes);
 console.log('branchRoutes:', typeof branchRoutes);
+console.log('localityRoutes:', typeof localityRoutes);
+console.log('employeeRoutes:', typeof employeeRoutes);
 
 const app = express();
 const port = process.env.PORT || 5999;
@@ -39,6 +42,7 @@ app.use('/api/cities', cityRoutes);
 app.use('/api/localities', localityRoutes);
 app.use('/api/colleges', collegeRoutes);
 app.use('/api/branches', branchRoutes);
+app.use('/api/employees', employeeRoutes);
 
 const startServer = async () => {
     try {

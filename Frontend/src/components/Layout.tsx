@@ -20,6 +20,7 @@ interface LayoutProps {
 const Layout: React.FC<LayoutProps> = ({ children }) => {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [masterMenuOpen, setMasterMenuOpen] = useState(true);
+  const [employeeMenuOpen, setEmployeeMenuOpen] = useState(true);
   const location = useLocation();
 
   const masterMenuItems = [
@@ -31,6 +32,12 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
     { name: 'Designations', path: '/master/designations', icon: Users },
     { name: 'Colleges', path: '/master/colleges', icon: GraduationCap },
     { name: 'Branches', path: '/master/branches', icon: Building2 },
+    { name: 'Employees', path: '/master/employees', icon: Users },
+  ];
+
+  const employeeMenuItems = [
+    { name: 'Employee Card', path: '/employee-portal/card', icon: Users },
+    { name: 'Employee List', path: '/employee-portal/list', icon: Briefcase },
   ];
 
   const isActivePath = (path: string) => location.pathname === path;
@@ -58,6 +65,37 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
             <Home className="mr-3" size={20} />
             Dashboard
           </Link>
+
+          {/* Employee Portal Dropdown */}
+          <div className="mb-2">
+            <button
+              onClick={() => setEmployeeMenuOpen(!employeeMenuOpen)}
+              className={`flex items-center justify-between w-full px-4 py-3 text-sm font-medium rounded-lg transition-colors ${location.pathname.startsWith('/employee-portal') ? 'bg-blue-600 text-white' : 'text-gray-300 hover:bg-slate-800 hover:text-white'}`}
+            >
+              <span className="flex items-center">
+                <Users className="mr-3" size={20} />
+                Employee Portal
+              </span>
+              <ChevronDown
+                className={`transform transition-transform ${employeeMenuOpen ? 'rotate-180' : ''}`}
+                size={16}
+              />
+            </button>
+            {employeeMenuOpen && (
+              <div className="ml-6 mt-2 space-y-1">
+                {employeeMenuItems.map((item) => (
+                  <Link
+                    key={item.path}
+                    to={item.path}
+                    className={`flex items-center px-4 py-2 text-sm rounded-lg transition-colors ${isActivePath(item.path) ? 'bg-blue-500 text-white' : 'text-gray-400 hover:bg-slate-800 hover:text-white'}`}
+                  >
+                    <item.icon className="mr-3" size={16} />
+                    {item.name}
+                  </Link>
+                ))}
+              </div>
+            )}
+          </div>
 
           {/* Master Menu */}
           <div className="mb-2">

@@ -4,7 +4,12 @@ const { getDB } = require('../database');
 const getAllDesignations = async (req, res) => {
     try {
         const pool = getDB();
-        const result = await pool.request().query('SELECT * FROM [dbo].[ATM_Designation_U88]');
+        const { departmentid } = req.query;
+        let query = 'SELECT * FROM [dbo].[ATM_Designation_U88]';
+        if (departmentid) {
+            query += ' WHERE departmentid = ' + parseInt(departmentid);
+        }
+        const result = await pool.request().query(query);
         res.status(200).json({
             status: "success",
             message: "Designations fetched successfully",

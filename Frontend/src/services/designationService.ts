@@ -1,8 +1,12 @@
 import apiService from './api';
 
 class DesignationService {
-  async getAllDesignations() {
-    return apiService.get('/api/designations');
+  async getAllDesignations(departmentId?: number | string) {
+    let url = '/api/designations';
+    if (departmentId) {
+      url += `?departmentid=${departmentId}`;
+    }
+    return apiService.get(url);
   }
 
   async createDesignation(data: any) {

@@ -10,6 +10,11 @@ import DesignationsPage from './pages/master/DesignationsPage';
 import CollegesPage from './pages/master/CollegesPage';
 import BranchesPage from './pages/master/BranchesPage';
 import LocalitiesPage from './pages/master/LocalityPage';
+import EmployeesPage from './pages/master/EmployeesPage';
+import EmployeePortal from './pages/EmployeePortal';
+import EmployeeCard from './pages/employee/EmployeeCard';
+import EmployeeList from './pages/employee/EmployeeList';
+import EmployeeRegistration from './pages/employee/EmployeeRegistration';
 
 function App() {
   return (
@@ -25,6 +30,12 @@ function App() {
           <Route path="/master/designations" element={<DesignationsPage />} />
           <Route path="/master/colleges" element={<CollegesPage />} />
           <Route path="/master/branches" element={<BranchesPage />} />
+          <Route path="/master/employees" element={<EmployeesPage />} />
+          <Route path="/employee-portal" element={<EmployeePortal />}>
+            <Route path="card" element={<EmployeeCard />} />
+            <Route path="list" element={<EmployeeList />} />
+          </Route>
+          <Route path="/employee/registration" element={<EmployeeRegistration />} />
         </Routes>
       </Layout>
     </Router>
