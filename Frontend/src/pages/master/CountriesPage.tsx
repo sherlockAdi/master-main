@@ -3,6 +3,7 @@ import { Plus, Search, Edit, Trash2, ArrowUp, ArrowDown } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import countryService from '../../services/countryService';
 import stateService from '../../services/stateService';
+import { HiOutlineGlobe, HiOutlineCheckCircle, HiOutlineXCircle, HiOutlineArchive, HiOutlinePencil, HiOutlineTrash, HiOutlineUserGroup, HiOutlineLibrary } from 'react-icons/hi';
 
 interface Country {
   conid: number;
@@ -184,14 +185,14 @@ const CountriesPage: React.FC = () => {
       </div>
 
       {/* Table */}
-      <div className="bg-white rounded-lg shadow-sm">
+      <div className="bg-white/70 backdrop-blur-lg rounded-2xl shadow-lg border border-blue-100 overflow-x-auto">
         {loading ? (
           <div className="p-12 text-center">
             <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto"></div>
             <p className="text-gray-600 mt-4">Loading countries...</p>
           </div>
         ) : (
-          <div className="overflow-x-auto">
+          <>
             <div className="flex items-center gap-4 p-4 bg-white rounded-lg shadow-sm">
               <label className="mr-2">Rows per page:</label>
               <select
@@ -215,45 +216,44 @@ const CountriesPage: React.FC = () => {
               <span className="ml-4 text-sm text-gray-600">Students in View: <span className="font-semibold">{totalStudentsInView}</span></span>
               <span className="ml-4 text-sm text-red-600">Unassociated: <span className="font-semibold">{unassociatedStudentCount}</span></span>
             </div>
-            <table className="w-full">
-              <thead className="bg-gray-50 border-b border-gray-200">
+            <table className="min-w-full">
+              <thead className="sticky top-0 z-10 bg-white/80 backdrop-blur-lg border-b border-blue-100 shadow-sm">
                 <tr>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    <button onClick={() => handleSort('conid')} className="flex items-center">
-                      ID {sortBy === 'conid' && (sortOrder === 'asc' ? <ArrowUp size={14} /> : <ArrowDown size={14} />)}
+                  <th className="px-6 py-3 text-left text-xs font-bold text-blue-700 uppercase tracking-wider rounded-tl-2xl">
+                    <button onClick={() => handleSort('conid')} className="flex items-center gap-1 focus:outline-none">
+                      <HiOutlineGlobe className="inline mr-1" />ID {sortBy === 'conid' && (sortOrder === 'asc' ? <ArrowUp size={14} /> : <ArrowDown size={14} />)}
                     </button>
                   </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    <button onClick={() => handleSort('country')} className="flex items-center">
+                  <th className="px-6 py-3 text-left text-xs font-bold text-blue-700 uppercase tracking-wider">
+                    <button onClick={() => handleSort('country')} className="flex items-center gap-1 focus:outline-none">
                       Country {sortBy === 'country' && (sortOrder === 'asc' ? <ArrowUp size={14} /> : <ArrowDown size={14} />)}
                     </button>
                   </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">State Count</th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                     <button onClick={() => handleSort('TotalBranches')} className="flex items-center">
-                      Branch Count {sortBy === 'TotalBranches' && (sortOrder === 'asc' ? <ArrowUp size={14} /> : <ArrowDown size={14} />)}
+                  <th className="px-6 py-3 text-left text-xs font-bold text-blue-700 uppercase tracking-wider"><HiOutlineUserGroup className="inline mr-1" />State Count</th>
+                  <th className="px-6 py-3 text-left text-xs font-bold text-blue-700 uppercase tracking-wider">
+                    <button onClick={() => handleSort('TotalBranches')} className="flex items-center gap-1 focus:outline-none">
+                      <HiOutlineLibrary className="inline mr-1" />Branch Count {sortBy === 'TotalBranches' && (sortOrder === 'asc' ? <ArrowUp size={14} /> : <ArrowDown size={14} />)}
                     </button>
                   </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    <button onClick={() => handleSort('TotalStudents')} className="flex items-center">
-                      Student Count {sortBy === 'TotalStudents' && (sortOrder === 'asc' ? <ArrowUp size={14} /> : <ArrowDown size={14} />)}
+                  <th className="px-6 py-3 text-left text-xs font-bold text-blue-700 uppercase tracking-wider">
+                    <button onClick={() => handleSort('TotalStudents')} className="flex items-center gap-1 focus:outline-none">
+                      <HiOutlineUserGroup className="inline mr-1" />Student Count {sortBy === 'TotalStudents' && (sortOrder === 'asc' ? <ArrowUp size={14} /> : <ArrowDown size={14} />)}
                     </button>
                   </th>
-
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    <button onClick={() => handleSort('status')} className="flex items-center">
+                  <th className="px-6 py-3 text-left text-xs font-bold text-blue-700 uppercase tracking-wider">
+                    <button onClick={() => handleSort('status')} className="flex items-center gap-1 focus:outline-none">
                       Status {sortBy === 'status' && (sortOrder === 'asc' ? <ArrowUp size={14} /> : <ArrowDown size={14} />)}
                     </button>
                   </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                     <button onClick={() => handleSort('archive')} className="flex items-center">
+                  <th className="px-6 py-3 text-left text-xs font-bold text-blue-700 uppercase tracking-wider">
+                    <button onClick={() => handleSort('archive')} className="flex items-center gap-1 focus:outline-none">
                       Archive {sortBy === 'archive' && (sortOrder === 'asc' ? <ArrowUp size={14} /> : <ArrowDown size={14} />)}
                     </button>
                   </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
+                  <th className="px-6 py-3 text-left text-xs font-bold text-blue-700 uppercase tracking-wider rounded-tr-2xl">Actions</th>
                 </tr>
               </thead>
-              <tbody className="bg-white divide-y divide-gray-200">
+              <tbody className="bg-white/60 divide-y divide-blue-50">
                 {countries.length === 0 ? (
                   <tr>
                     <td colSpan={8} className="px-6 py-12 text-center text-gray-500">
@@ -264,50 +264,41 @@ const CountriesPage: React.FC = () => {
                   countries.map((country) => {
                     const disabled = hasRelatedData(country);
                     const stateCount = states.filter(s => s.conid === country.conid).length;
-
                     return (
-                      <tr key={country.conid} className="hover:bg-gray-50">
-                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{country.conid}</td>
-                        <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
-                          <button
-                            onClick={() => handleCountryClick(country.conid)}
-                            className="text-blue-600 hover:text-blue-800 hover:underline cursor-pointer font-medium"
-                          >
-                            {country.country}
-                          </button>
-                        </td>
+                      <tr key={country.conid} className="hover:bg-blue-50/70 transition-all cursor-pointer group">
+                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 font-semibold rounded-l-xl">{country.conid}</td>
+                        <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-blue-700">{country.country}</td>
                         <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{stateCount}</td>
-
                         <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">{country?.TotalBranches}</td>
                         <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">{country?.TotalStudents}</td>
                         <td className="px-6 py-4 whitespace-nowrap">
-                          <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${country.status ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}`}>
+                          <span className={`inline-flex items-center gap-1 px-3 py-1 rounded-full text-xs font-bold ${country.status ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'}`}>
+                            {country.status ? <HiOutlineCheckCircle className="w-4 h-4" /> : <HiOutlineXCircle className="w-4 h-4" />}
                             {country.status ? 'Active' : 'Inactive'}
                           </span>
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap">
-                          <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${country.archive ? 'bg-yellow-100 text-yellow-800' : 'bg-gray-100 text-gray-800'}`}>
+                          <span className={`inline-flex items-center gap-1 px-3 py-1 rounded-full text-xs font-bold ${country.archive ? 'bg-yellow-100 text-yellow-700' : 'bg-gray-100 text-gray-700'}`}>
+                            <HiOutlineArchive className="w-4 h-4" />
                             {country.archive ? 'Yes' : 'No'}
                           </span>
                         </td>
-                        <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                          <div className="flex space-x-2">
-                            <button
-                              onClick={() => handleOpen(country)}
-                              className="text-blue-600 hover:text-blue-900 p-1 rounded"
-                              title="Edit"
-                            >
-                              <Edit size={16} />
-                            </button>
-                            <button
-                              onClick={() => !disabled && handleDelete(country.conid)}
-                              disabled={disabled}
-                              className={`p-1 rounded ${disabled ? 'text-gray-400 cursor-not-allowed' : 'text-red-600 hover:text-red-900'}`}
-                              title={getDeleteDisabledReason(country)}
-                            >
-                              <Trash2 size={16} />
-                            </button>
-                          </div>
+                        <td className="px-6 py-4 whitespace-nowrap flex gap-2 rounded-r-xl" onClick={e => e.stopPropagation()}>
+                          <button
+                            onClick={() => handleOpen(country)}
+                            className="bg-blue-100 hover:bg-blue-200 text-blue-700 p-2 rounded-full shadow"
+                            title="Edit"
+                          >
+                            <HiOutlinePencil size={18} />
+                          </button>
+                          <button
+                            onClick={() => !disabled && handleDelete(country.conid)}
+                            disabled={disabled}
+                            className={`p-2 rounded-full shadow ${disabled ? 'text-gray-400 cursor-not-allowed bg-gray-100' : 'text-red-700 bg-red-100 hover:bg-red-200'}`}
+                            title={getDeleteDisabledReason(country)}
+                          >
+                            <HiOutlineTrash size={18} />
+                          </button>
                         </td>
                       </tr>
                     );
@@ -315,7 +306,7 @@ const CountriesPage: React.FC = () => {
                 )}
               </tbody>
             </table>
-          </div>
+          </>
         )}
       </div>
 

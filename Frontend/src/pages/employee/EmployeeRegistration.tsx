@@ -323,7 +323,7 @@ const EmployeeRegistration: React.FC = () => {
         !['department', 'designation', ...dateFieldsEmp, ...booleanFieldsEmp].includes(f) && !dropdownFields[f]
       );
       return (
-        <div className="col-span-full bg-blue-50/60 rounded-xl p-6 mb-6 shadow-inner border border-blue-100">
+        <div className="col-span-full bg-blue-50/60 rounded-xl  mb-6 shadow-inner border border-blue-100">
           <h3 className="text-xl font-bold text-blue-700 mb-6 flex items-center gap-2">
             <span className="inline-block w-2 h-6 bg-blue-400 rounded-full mr-2"></span>
             Employment Details
@@ -612,7 +612,7 @@ const EmployeeRegistration: React.FC = () => {
   };
 
   return (
-    <div className="max-w-3xl mx-auto bg-white rounded-lg shadow-lg p-8 mt-8">
+    <div className=" mx-auto bg-white rounded-lg shadow-lg p-4 ">
       {/* Search by Employee Code */}
       <form onSubmit={handleSearch} className="flex gap-3 mb-6">
         <input

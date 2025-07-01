@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Plus, Search, Edit, Trash2 } from 'lucide-react';
 import designationService from '../../services/designationService';
 import departmentService from '../../services/departmentService';
+import { HiOutlineBadgeCheck, HiOutlineOfficeBuilding, HiOutlineCheckCircle, HiOutlineXCircle, HiOutlineArchive, HiOutlinePencil, HiOutlineTrash } from 'react-icons/hi';
 
 interface Designation {
   id: number;
@@ -184,76 +185,72 @@ const DesignationsPage: React.FC = () => {
       </div>
 
       {/* Table */}
-      <div className="bg-white rounded-lg shadow-sm">
+      <div className="bg-white/70 backdrop-blur-lg rounded-2xl shadow-lg border border-blue-100 overflow-x-auto">
         {loading ? (
           <div className="p-12 text-center">
             <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto"></div>
             <p className="text-gray-600 mt-4">Loading designations...</p>
           </div>
         ) : (
-          <div className="overflow-x-auto">
-            <table className="w-full">
-              <thead className="bg-gray-50 border-b border-gray-200">
+          <table className="min-w-full">
+            <thead className="sticky top-0 z-10 bg-white/80 backdrop-blur-lg border-b border-blue-100 shadow-sm">
+              <tr>
+                <th className="px-6 py-3 text-left text-xs font-bold text-blue-700 uppercase tracking-wider rounded-tl-2xl"><HiOutlineBadgeCheck className="inline mr-1" />ID</th>
+                <th className="px-6 py-3 text-left text-xs font-bold text-blue-700 uppercase tracking-wider">Designation</th>
+                <th className="px-6 py-3 text-left text-xs font-bold text-blue-700 uppercase tracking-wider">Short Name</th>
+                <th className="px-6 py-3 text-left text-xs font-bold text-blue-700 uppercase tracking-wider"><HiOutlineOfficeBuilding className="inline mr-1" />Department</th>
+                <th className="px-6 py-3 text-left text-xs font-bold text-blue-700 uppercase tracking-wider">Status</th>
+                <th className="px-6 py-3 text-left text-xs font-bold text-blue-700 uppercase tracking-wider">Archive</th>
+                <th className="px-6 py-3 text-left text-xs font-bold text-blue-700 uppercase tracking-wider rounded-tr-2xl">Actions</th>
+              </tr>
+            </thead>
+            <tbody className="bg-white/60 divide-y divide-blue-50">
+              {filteredDesignations.length === 0 ? (
                 <tr>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">ID</th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Designation</th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Short Name</th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Department</th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Grade</th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Archive</th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
+                  <td colSpan={7} className="px-6 py-12 text-center text-gray-500">
+                    No designations found
+                  </td>
                 </tr>
-              </thead>
-              <tbody className="bg-white divide-y divide-gray-200">
-                {filteredDesignations.length === 0 ? (
-                  <tr>
-                    <td colSpan={8} className="px-6 py-12 text-center text-gray-500">
-                      No designations found
+              ) : (
+                filteredDesignations.map((designation) => (
+                  <tr key={designation.id} className="hover:bg-blue-50/70 transition-all cursor-pointer group">
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 font-semibold rounded-l-xl">{designation.Desgid}</td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-blue-700 gap-2"><HiOutlineBadgeCheck className="inline mr-1" />{designation.Desgname}</td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{designation.shortname}</td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-700 gap-2"><HiOutlineOfficeBuilding className="inline mr-1" />{getDepartmentName(designation.departmentid)}</td>
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      <span className={`inline-flex items-center gap-1 px-3 py-1 rounded-full text-xs font-bold ${designation.status ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'}`}>
+                        {designation.status ? <HiOutlineCheckCircle className="w-4 h-4" /> : <HiOutlineXCircle className="w-4 h-4" />}
+                        {designation.status ? 'Active' : 'Inactive'}
+                      </span>
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      <span className={`inline-flex items-center gap-1 px-3 py-1 rounded-full text-xs font-bold ${designation.archive ? 'bg-yellow-100 text-yellow-700' : 'bg-gray-100 text-gray-700'}`}>
+                        <HiOutlineArchive className="w-4 h-4" />
+                        {designation.archive ? 'Yes' : 'No'}
+                      </span>
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap flex gap-2 rounded-r-xl" onClick={e => e.stopPropagation()}>
+                      <button
+                        onClick={() => handleOpen(designation)}
+                        className="bg-blue-100 hover:bg-blue-200 text-blue-700 p-2 rounded-full shadow"
+                        title="Edit"
+                      >
+                        <HiOutlinePencil size={18} />
+                      </button>
+                      <button
+                        onClick={() => handleDelete(designation.id)}
+                        className="bg-red-100 hover:bg-red-200 text-red-700 p-2 rounded-full shadow"
+                        title="Delete"
+                      >
+                        <HiOutlineTrash size={18} />
+                      </button>
                     </td>
                   </tr>
-                ) : (
-                  filteredDesignations.map((designation) => (
-                    <tr key={designation.id} className="hover:bg-gray-50">
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{designation.Desgid}</td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">{designation.Desgname}</td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{designation.shortname}</td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{getDepartmentName(designation.departmentid)}</td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{designation.gradeid || '-'}</td>
-                      <td className="px-6 py-4 whitespace-nowrap">
-                        <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${designation.status ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}`}>
-                          {designation.status ? 'Active' : 'Inactive'}
-                        </span>
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap">
-                        <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${designation.archive ? 'bg-yellow-100 text-yellow-800' : 'bg-gray-100 text-gray-800'}`}>
-                          {designation.archive ? 'Yes' : 'No'}
-                        </span>
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                        <div className="flex space-x-2">
-                          <button
-                            onClick={() => handleOpen(designation)}
-                            className="text-blue-600 hover:text-blue-900 p-1 rounded"
-                            title="Edit"
-                          >
-                            <Edit size={16} />
-                          </button>
-                          <button
-                            onClick={() => handleDelete(designation.id)}
-                            className="text-red-600 hover:text-red-900 p-1 rounded"
-                            title="Delete"
-                          >
-                            <Trash2 size={16} />
-                          </button>
-                        </div>
-                      </td>
-                    </tr>
-                  ))
-                )}
-              </tbody>
-            </table>
-          </div>
+                ))
+              )}
+            </tbody>
+          </table>
         )}
       </div>
 

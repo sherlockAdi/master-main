@@ -1,6 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { Plus, Search, Edit, Trash2 } from 'lucide-react';
 import collegeService from '../../services/collegeService';
+import { HiOutlineAcademicCap, HiOutlineIdentification, HiOutlineUser, HiOutlineBuildingLibrary, HiOutlineArchiveBox } from 'react-icons/hi2';
+import { ArrowUp, ArrowDown } from 'lucide-react';
 
 interface College {
   id: number;
@@ -35,6 +37,8 @@ const CollegesPage: React.FC = () => {
     service_tax_no: ''
   });
   const [searchTerm, setSearchTerm] = useState('');
+  const [sortBy, setSortBy] = useState('');
+  const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('asc');
 
   useEffect(() => {
     loadData();
@@ -122,6 +126,14 @@ const CollegesPage: React.FC = () => {
     }
   };
 
+  const handleSort = (column: string) => {
+    if (sortBy === column) {
+      setSortOrder(prev => (prev === 'asc' ? 'desc' : 'asc'));
+    } else {
+      setSortBy(column);
+    }
+  };
+
   const filteredColleges = colleges.filter(college =>
     college.collegename.toLowerCase().includes(searchTerm.toLowerCase()) ||
     college.shortname.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -171,16 +183,44 @@ const CollegesPage: React.FC = () => {
         ) : (
           <div className="overflow-x-auto">
             <table className="w-full">
-              <thead className="bg-gray-50 border-b border-gray-200">
+              <thead className="sticky top-0 z-10 bg-white/80 backdrop-blur-lg border-b border-blue-100 shadow-sm">
                 <tr>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">ID</th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">College Name</th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Short Name</th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Code</th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Director</th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Archive</th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
+                  <th className="px-6 py-3 text-left text-xs font-bold text-blue-700 uppercase tracking-wider rounded-tl-2xl">
+                    <button onClick={() => handleSort('collegeid')} className="flex items-center gap-1 focus:outline-none">
+                      <HiOutlineIdentification className="inline mr-1" />ID {sortBy === 'collegeid' && (sortOrder === 'asc' ? <ArrowUp size={14} /> : <ArrowDown size={14} />)}
+                    </button>
+                  </th>
+                  <th className="px-6 py-3 text-left text-xs font-bold text-blue-700 uppercase tracking-wider">
+                    <button onClick={() => handleSort('collegename')} className="flex items-center gap-1 focus:outline-none">
+                      <HiOutlineAcademicCap className="inline mr-1" />College Name {sortBy === 'collegename' && (sortOrder === 'asc' ? <ArrowUp size={14} /> : <ArrowDown size={14} />)}
+                    </button>
+                  </th>
+                  <th className="px-6 py-3 text-left text-xs font-bold text-blue-700 uppercase tracking-wider">
+                    <button onClick={() => handleSort('shortname')} className="flex items-center gap-1 focus:outline-none">
+                      Short Name {sortBy === 'shortname' && (sortOrder === 'asc' ? <ArrowUp size={14} /> : <ArrowDown size={14} />)}
+                    </button>
+                  </th>
+                  <th className="px-6 py-3 text-left text-xs font-bold text-blue-700 uppercase tracking-wider">
+                    <button onClick={() => handleSort('collegecode')} className="flex items-center gap-1 focus:outline-none">
+                      Code {sortBy === 'collegecode' && (sortOrder === 'asc' ? <ArrowUp size={14} /> : <ArrowDown size={14} />)}
+                    </button>
+                  </th>
+                  <th className="px-6 py-3 text-left text-xs font-bold text-blue-700 uppercase tracking-wider">
+                    <button onClick={() => handleSort('director')} className="flex items-center gap-1 focus:outline-none">
+                      <HiOutlineUser className="inline mr-1" />Director {sortBy === 'director' && (sortOrder === 'asc' ? <ArrowUp size={14} /> : <ArrowDown size={14} />)}
+                    </button>
+                  </th>
+                  <th className="px-6 py-3 text-left text-xs font-bold text-blue-700 uppercase tracking-wider">
+                    <button onClick={() => handleSort('status')} className="flex items-center gap-1 focus:outline-none">
+                      Status {sortBy === 'status' && (sortOrder === 'asc' ? <ArrowUp size={14} /> : <ArrowDown size={14} />)}
+                    </button>
+                  </th>
+                  <th className="px-6 py-3 text-left text-xs font-bold text-blue-700 uppercase tracking-wider">
+                    <button onClick={() => handleSort('archive')} className="flex items-center gap-1 focus:outline-none">
+                      Archive {sortBy === 'archive' && (sortOrder === 'asc' ? <ArrowUp size={14} /> : <ArrowDown size={14} />)}
+                    </button>
+                  </th>
+                  <th className="px-6 py-3 text-left text-xs font-bold text-blue-700 uppercase tracking-wider rounded-tr-2xl">Actions</th>
                 </tr>
               </thead>
               <tbody className="bg-white divide-y divide-gray-200">

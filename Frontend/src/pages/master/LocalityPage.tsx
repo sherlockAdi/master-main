@@ -4,6 +4,7 @@ import { useSearchParams } from 'react-router-dom';
 import localityService from '../../services/localityService';
 import cityService from '../../services/cityService';
 import stateService from '../../services/stateService';
+import { HiOutlineGlobeAlt, HiOutlineBuildingOffice2, HiOutlineUserGroup } from 'react-icons/hi2';
 
 interface Locality {
     tehsil_id: number;
@@ -220,29 +221,29 @@ const LocalitiesPage: React.FC = () => {
                     <div className="p-8 text-center text-gray-500">No localities found</div>
                 ) : (
                     <table className="min-w-full">
-                        <thead className="bg-gray-50">
+                        <thead className="sticky top-0 z-10 bg-white/80 backdrop-blur-lg border-b border-blue-100 shadow-sm">
                             <tr>
-                                <th className="text-left px-6 py-3 text-xs font-medium text-gray-500">
-                                     <button onClick={() => handleSort('tehsil_id')} className="flex items-center">
-                                        ID {sortBy === 'tehsil_id' && (sortOrder === 'asc' ? <ArrowUp size={14} /> : <ArrowDown size={14} />)}
+                                <th className="text-left px-6 py-3 text-xs font-bold text-blue-700 uppercase tracking-wider rounded-tl-2xl">
+                                    <button onClick={() => handleSort('tehsil_id')} className="flex items-center gap-1 focus:outline-none">
+                                        <HiOutlineGlobeAlt className="inline mr-1" />ID {sortBy === 'tehsil_id' && (sortOrder === 'asc' ? <ArrowUp size={14} /> : <ArrowDown size={14} />)}
                                     </button>
                                 </th>
-                                <th className="text-left px-6 py-3 text-xs font-medium text-gray-500">
-                                     <button onClick={() => handleSort('Tehsil_names')} className="flex items-center">
-                                        Locality {sortBy === 'Tehsil_names' && (sortOrder === 'asc' ? <ArrowUp size={14} /> : <ArrowDown size={14} />)}
+                                <th className="text-left px-6 py-3 text-xs font-bold text-blue-700 uppercase tracking-wider">
+                                    <button onClick={() => handleSort('Tehsil_names')} className="flex items-center gap-1 focus:outline-none">
+                                        <HiOutlineBuildingOffice2 className="inline mr-1" />Locality {sortBy === 'Tehsil_names' && (sortOrder === 'asc' ? <ArrowUp size={14} /> : <ArrowDown size={14} />)}
                                     </button>
                                 </th>
-                                <th className="text-left px-6 py-3 text-xs font-medium text-gray-500">
-                                     <button onClick={() => handleSort('atmcityid')} className="flex items-center">
-                                        City {sortBy === 'atmcityid' && (sortOrder === 'asc' ? <ArrowUp size={14} /> : <ArrowDown size={14} />)}
+                                <th className="text-left px-6 py-3 text-xs font-bold text-blue-700 uppercase tracking-wider">
+                                    <button onClick={() => handleSort('atmcityid')} className="flex items-center gap-1 focus:outline-none">
+                                        <HiOutlineGlobeAlt className="inline mr-1" />City {sortBy === 'atmcityid' && (sortOrder === 'asc' ? <ArrowUp size={14} /> : <ArrowDown size={14} />)}
                                     </button>
                                 </th>
-                                <th className="text-left px-6 py-3 text-xs font-medium text-gray-500">
-                                    <button onClick={() => handleSort('TotalStudents')} className="flex items-center">
-                                        Students {sortBy === 'TotalStudents' && (sortOrder === 'asc' ? <ArrowUp size={14} /> : <ArrowDown size={14} />)}
+                                <th className="text-left px-6 py-3 text-xs font-bold text-blue-700 uppercase tracking-wider">
+                                    <button onClick={() => handleSort('TotalStudents')} className="flex items-center gap-1 focus:outline-none">
+                                        <HiOutlineUserGroup className="inline mr-1" />Students {sortBy === 'TotalStudents' && (sortOrder === 'asc' ? <ArrowUp size={14} /> : <ArrowDown size={14} />)}
                                     </button>
                                 </th>
-                                <th className="text-left px-6 py-3 text-xs font-medium text-gray-500">Actions</th>
+                                <th className="text-left px-6 py-3 text-xs font-bold text-blue-700 uppercase tracking-wider rounded-tr-2xl">Actions</th>
                             </tr>
                         </thead>
                         <tbody className="divide-y divide-gray-100">

@@ -6,6 +6,7 @@ import countryService from '../../services/countryService';
 import stateService from '../../services/stateService';
 import cityService from '../../services/cityService';
 import { useNavigate } from 'react-router-dom';
+import { HiOutlineBadgeCheck, HiOutlineOfficeBuilding, HiOutlineIdentification, HiOutlinePencil, HiOutlineTrash, HiOutlineUser } from 'react-icons/hi';
 
 interface Employee {
   id: number;
@@ -327,53 +328,71 @@ const EmployeeList: React.FC = () => {
         <span className="ml-auto text-sm text-gray-600">Total Employees: <span className="font-semibold">{total}</span></span>
       </div>
       {/* Table */}
-      <div className="bg-white rounded-lg shadow-sm">
+      <div className="bg-white/70 backdrop-blur-lg rounded-2xl shadow-lg border border-blue-100 overflow-x-auto">
         {loading ? (
           <div className="p-12 text-center">
             <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto"></div>
             <p className="text-gray-600 mt-4">Loading employees...</p>
           </div>
         ) : (
-          <div className="p-6 grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
-            {employees.length === 0 ? (
-              <div className="col-span-full text-center text-gray-500 py-12">No employees found</div>
-            ) : (
-              employees.map((employee) => (
-                <div
-                  key={employee.id}
-                  className="bg-white/80 rounded-2xl shadow-lg border border-blue-100 p-6 flex flex-col items-center cursor-pointer hover:shadow-2xl transition-all group"
-                  onClick={() => handleRowClick(employee)}
-                >
-                  {employee.image ? (
-                    <img src={employee.image} alt="Employee" className="w-20 h-20 rounded-full object-cover border-4 border-blue-200 shadow mb-3" />
-                  ) : (
-                    <div className="w-20 h-20 rounded-full bg-blue-100 flex items-center justify-center text-blue-400 text-3xl border-4 border-blue-200 shadow mb-3">
-                      <span>{employee.firstname?.[0] || '?'}</span>
-                    </div>
-                  )}
-                  <div className="text-lg font-bold text-gray-900 mb-1">{employee.firstname} {employee.lastname}</div>
-                  <div className="text-blue-600 font-semibold mb-1">{getDesgname(employee.designation)}</div>
-                  <div className="text-gray-500 mb-1">{getDeptName(employee.department)}</div>
-                  <div className="text-gray-400 text-xs mb-2">Code: {employee.employeecode}</div>
-                  <div className="mb-2">
-                    <span className={`inline-block px-3 py-1 rounded-full text-xs font-bold bg-${employee.status ? 'green' : 'red'}-100 text-${employee.status ? 'green' : 'red'}-700`}>
-                      {employee.status ? 'Active' : 'Inactive'}
-                    </span>
-                  </div>
-                  <div className="flex gap-2 mt-2">
-                    <button
-                      onClick={e => { e.stopPropagation(); openEditModal(employee); }}
-                      className="bg-blue-100 hover:bg-blue-200 text-blue-700 px-3 py-1 rounded-lg text-xs font-semibold transition-all shadow"
-                    >Edit</button>
-                    <button
-                      onClick={e => { e.stopPropagation(); setDeleteId(employee.id); }}
-                      className="bg-red-100 hover:bg-red-200 text-red-700 px-3 py-1 rounded-lg text-xs font-semibold transition-all shadow"
-                    >Delete</button>
-                  </div>
-                </div>
-              ))
-            )}
-          </div>
+          <table className="min-w-full">
+            <thead className="sticky top-0 z-10 bg-white/80 backdrop-blur-lg border-b border-blue-100 shadow-sm">
+              <tr>
+                <th className="px-6 py-3 text-left text-xs font-bold text-blue-700 uppercase tracking-wider rounded-tl-2xl">First Name</th>
+                <th className="px-6 py-3 text-left text-xs font-bold text-blue-700 uppercase tracking-wider">Last Name</th>
+                <th className="px-6 py-3 text-left text-xs font-bold text-blue-700 uppercase tracking-wider"><span className="flex items-center gap-1"><HiOutlineBadgeCheck />Designation</span></th>
+                <th className="px-6 py-3 text-left text-xs font-bold text-blue-700 uppercase tracking-wider"><span className="flex items-center gap-1"><HiOutlineOfficeBuilding />Department</span></th>
+                <th className="px-6 py-3 text-left text-xs font-bold text-blue-700 uppercase tracking-wider"><span className="flex items-center gap-1"><HiOutlineIdentification />Code</span></th>
+                <th className="px-6 py-3 text-left text-xs font-bold text-blue-700 uppercase tracking-wider">Status</th>
+                <th className="px-6 py-3 text-left text-xs font-bold text-blue-700 uppercase tracking-wider rounded-tr-2xl">Actions</th>
+              </tr>
+            </thead>
+            <tbody className="bg-white/60 divide-y divide-blue-50">
+              {employees.length === 0 ? (
+                <tr>
+                  <td colSpan={7} className="px-6 py-12 text-center text-gray-500">
+                    No employees found
+                  </td>
+                </tr>
+              ) : (
+                employees.map((employee, idx) => (
+                  <tr
+                    key={employee.id}
+                    className="hover:bg-blue-50/70 transition-all cursor-pointer group"
+                    onClick={() => handleRowClick(employee)}
+                  >
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 font-semibold rounded-l-xl">{employee.firstname}</td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 font-semibold">{employee.lastname}</td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-blue-700 font-semibold gap-2"><HiOutlineBadgeCheck className="inline mr-1" />{getDesgname(employee.designation)}</td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-700 gap-2"><HiOutlineOfficeBuilding className="inline mr-1" />{getDeptName(employee.department)}</td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 gap-2"><HiOutlineIdentification className="inline mr-1" />{employee.employeecode}</td>
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      <span className={`inline-flex items-center gap-1 px-3 py-1 rounded-full text-xs font-bold bg-${employee.status ? 'green' : 'red'}-100 text-${employee.status ? 'green' : 'red'}-700`}>
+                        <span className={`w-2 h-2 rounded-full ${employee.status ? 'bg-green-500' : 'bg-red-500'}`}></span>
+                        {employee.status ? 'Active' : 'Inactive'}
+                      </span>
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap flex gap-2 rounded-r-xl" onClick={e => e.stopPropagation()}>
+                      <button
+                        onClick={() => openEditModal(employee)}
+                        className="bg-blue-100 hover:bg-blue-200 text-blue-700 p-2 rounded-full shadow"
+                        title="Edit"
+                      >
+                        <HiOutlinePencil size={18} />
+                      </button>
+                      <button
+                        onClick={() => setDeleteId(employee.id)}
+                        className="bg-red-100 hover:bg-red-200 text-red-700 p-2 rounded-full shadow"
+                        title="Delete"
+                      >
+                        <HiOutlineTrash size={18} />
+                      </button>
+                    </td>
+                  </tr>
+                ))
+              )}
+            </tbody>
+          </table>
         )}
       </div>
       {/* Add/Edit Drawer */}

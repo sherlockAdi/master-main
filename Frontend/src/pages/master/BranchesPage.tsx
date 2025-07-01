@@ -2,6 +2,8 @@ import React, { useState, useEffect } from 'react';
 import { Plus, Search, Edit, Trash2 } from 'lucide-react';
 import branchService from '../../services/branchService';
 import collegeService from '../../services/collegeService';
+import { HiOutlineIdentification, HiOutlineAcademicCap, HiOutlineBuildingOffice2, HiOutlineMapPin, HiOutlinePhone, HiOutlineCheckCircle, HiOutlineXCircle, HiOutlineArchiveBox } from 'react-icons/hi2';
+import { ArrowUp, ArrowDown } from 'lucide-react';
 
 interface Branch {
   id: number;
@@ -47,6 +49,8 @@ const BranchesPage: React.FC = () => {
   });
   const [searchTerm, setSearchTerm] = useState('');
   const [filterCollegeId, setFilterCollegeId] = useState('');
+  const [sortBy, setSortBy] = useState('');
+  const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('asc');
 
   useEffect(() => {
     loadData();
@@ -157,6 +161,15 @@ const BranchesPage: React.FC = () => {
     return matchesSearch && matchesCollege;
   });
 
+  const handleSort = (column: string) => {
+    if (sortBy === column) {
+      setSortOrder(prev => prev === 'asc' ? 'desc' : 'asc');
+    } else {
+      setSortBy(column);
+      setSortOrder('asc');
+    }
+  };
+
   return (
     <div className="space-y-6">
       {/* Header */}
@@ -214,17 +227,49 @@ const BranchesPage: React.FC = () => {
         ) : (
           <div className="overflow-x-auto">
             <table className="w-full">
-              <thead className="bg-gray-50 border-b border-gray-200">
+              <thead className="sticky top-0 z-10 bg-white/80 backdrop-blur-lg border-b border-blue-100 shadow-sm">
                 <tr>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">ID</th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Branch Name</th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Short Name</th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">College</th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">City</th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Phone</th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Archive</th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
+                  <th className="px-6 py-3 text-left text-xs font-bold text-blue-700 uppercase tracking-wider rounded-tl-2xl">
+                    <button onClick={() => handleSort('Branchid')} className="flex items-center gap-1 focus:outline-none">
+                      <HiOutlineIdentification className="inline mr-1" />ID {sortBy === 'Branchid' && (sortOrder === 'asc' ? <ArrowUp size={14} /> : <ArrowDown size={14} />)}
+                    </button>
+                  </th>
+                  <th className="px-6 py-3 text-left text-xs font-bold text-blue-700 uppercase tracking-wider">
+                    <button onClick={() => handleSort('Branchname')} className="flex items-center gap-1 focus:outline-none">
+                      <HiOutlineAcademicCap className="inline mr-1" />Branch Name {sortBy === 'Branchname' && (sortOrder === 'asc' ? <ArrowUp size={14} /> : <ArrowDown size={14} />)}
+                    </button>
+                  </th>
+                  <th className="px-6 py-3 text-left text-xs font-bold text-blue-700 uppercase tracking-wider">
+                    <button onClick={() => handleSort('shortname')} className="flex items-center gap-1 focus:outline-none">
+                      Short Name {sortBy === 'shortname' && (sortOrder === 'asc' ? <ArrowUp size={14} /> : <ArrowDown size={14} />)}
+                    </button>
+                  </th>
+                  <th className="px-6 py-3 text-left text-xs font-bold text-blue-700 uppercase tracking-wider">
+                    <button onClick={() => handleSort('collegeid')} className="flex items-center gap-1 focus:outline-none">
+                      <HiOutlineBuildingOffice2 className="inline mr-1" />College {sortBy === 'collegeid' && (sortOrder === 'asc' ? <ArrowUp size={14} /> : <ArrowDown size={14} />)}
+                    </button>
+                  </th>
+                  <th className="px-6 py-3 text-left text-xs font-bold text-blue-700 uppercase tracking-wider">
+                    <button onClick={() => handleSort('cityname')} className="flex items-center gap-1 focus:outline-none">
+                      <HiOutlineMapPin className="inline mr-1" />City {sortBy === 'cityname' && (sortOrder === 'asc' ? <ArrowUp size={14} /> : <ArrowDown size={14} />)}
+                    </button>
+                  </th>
+                  <th className="px-6 py-3 text-left text-xs font-bold text-blue-700 uppercase tracking-wider">
+                    <button onClick={() => handleSort('phoneNo')} className="flex items-center gap-1 focus:outline-none">
+                      <HiOutlinePhone className="inline mr-1" />Phone {sortBy === 'phoneNo' && (sortOrder === 'asc' ? <ArrowUp size={14} /> : <ArrowDown size={14} />)}
+                    </button>
+                  </th>
+                  <th className="px-6 py-3 text-left text-xs font-bold text-blue-700 uppercase tracking-wider">
+                    <button onClick={() => handleSort('status')} className="flex items-center gap-1 focus:outline-none">
+                      Status {sortBy === 'status' && (sortOrder === 'asc' ? <ArrowUp size={14} /> : <ArrowDown size={14} />)}
+                    </button>
+                  </th>
+                  <th className="px-6 py-3 text-left text-xs font-bold text-blue-700 uppercase tracking-wider">
+                    <button onClick={() => handleSort('archive')} className="flex items-center gap-1 focus:outline-none">
+                      Archive {sortBy === 'archive' && (sortOrder === 'asc' ? <ArrowUp size={14} /> : <ArrowDown size={14} />)}
+                    </button>
+                  </th>
+                  <th className="px-6 py-3 text-left text-xs font-bold text-blue-700 uppercase tracking-wider rounded-tr-2xl">Actions</th>
                 </tr>
               </thead>
               <tbody className="bg-white divide-y divide-gray-200">
@@ -251,7 +296,6 @@ const BranchesPage: React.FC = () => {
                       <td className="px-6 py-4 whitespace-nowrap">
                         <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${branch.archive ? 'bg-yellow-100 text-yellow-800' : 'bg-gray-100 text-gray-800'}`}>
                           {branch.archive ? 'Yes' : 'No'}
-
                         </span>
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">

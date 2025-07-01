@@ -46,8 +46,7 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-blue-100 flex">
       {/* Sidebar */}
-      <div className={`fixed inset-y-0 left-0 z-50 w-64 bg-white/80 backdrop-blur-lg shadow-2xl border-r border-blue-100 text-slate-900 transform ${sidebarOpen ? 'translate-x-0' : '-translate-x-full'} transition-transform duration-300 ease-in-out lg:translate-x-0 lg:static lg:inset-0 flex flex-col`}
-        style={{ minHeight: '100vh' }}>
+      <div className={`fixed top-0 left-0 h-screen z-50 w-64 bg-white/80 backdrop-blur-lg shadow-2xl border-r border-blue-100 text-slate-900 transform ${sidebarOpen ? 'translate-x-0' : '-translate-x-full'} transition-transform duration-300 ease-in-out lg:translate-x-0 flex flex-col`}>
         {/* Logo/Avatar */}
         <div className="flex items-center justify-between h-16 px-6 border-b border-blue-100 bg-white/60 backdrop-blur-lg sticky top-0 z-50">
           <div className="flex items-center gap-3">
@@ -139,7 +138,7 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
         />
       )}
       {/* Main Content */}
-      <div className="flex-1 lg:ml-0">
+      <div className="flex-1 lg:ml-64">
         {/* Top Bar */}
         <header className="sticky top-0 z-40 bg-white/80 backdrop-blur-lg shadow-md border-b border-blue-100 h-16 flex items-center justify-between px-6">
           <button
@@ -154,7 +153,7 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
           </div>
         </header>
         {/* Page Content */}
-        <main className="p-6 pt-10 md:pt-12">
+        <main className="p-2 pt-4 ">
           {children}
         </main>
       </div>

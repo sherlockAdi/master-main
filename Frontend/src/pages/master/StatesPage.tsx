@@ -4,6 +4,7 @@ import { useSearchParams, useNavigate } from 'react-router-dom';
 import stateService from '../../services/stateService';
 import countryService from '../../services/countryService';
 import cityService from '../../services/cityService'; // New import
+import { HiOutlineGlobe, HiOutlineUserGroup, HiOutlineLibrary, HiOutlineCheckCircle, HiOutlineXCircle, HiOutlineArchive } from 'react-icons/hi';
 
 interface State {
   stateid: number;
@@ -302,44 +303,44 @@ const StatesPage: React.FC = () => {
         ) : (
           <div className="overflow-x-auto">
             <table className="w-full">
-              <thead className="bg-gray-50 border-b border-gray-200">
+              <thead className="sticky top-0 z-10 bg-white/80 backdrop-blur-lg border-b border-blue-100 shadow-sm">
                 <tr>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    <button onClick={() => handleSort('stateid')} className="flex items-center">
-                      ID {sortBy === 'stateid' && (sortOrder === 'asc' ? <ArrowUp size={14} /> : <ArrowDown size={14} />)}
+                  <th className="px-6 py-3 text-left text-xs font-bold text-blue-700 uppercase tracking-wider rounded-tl-2xl">
+                    <button onClick={() => handleSort('stateid')} className="flex items-center gap-1 focus:outline-none">
+                      <HiOutlineGlobe className="inline mr-1" />ID {sortBy === 'stateid' && (sortOrder === 'asc' ? <ArrowUp size={14} /> : <ArrowDown size={14} />)}
                     </button>
                   </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    <button onClick={() => handleSort('state')} className="flex items-center">
+                  <th className="px-6 py-3 text-left text-xs font-bold text-blue-700 uppercase tracking-wider">
+                    <button onClick={() => handleSort('state')} className="flex items-center gap-1 focus:outline-none">
                       State {sortBy === 'state' && (sortOrder === 'asc' ? <ArrowUp size={14} /> : <ArrowDown size={14} />)}
                     </button>
                   </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    <button onClick={() => handleSort('TotalBranches')} className="flex items-center">
-                      Branch Count {sortBy === 'TotalBranches' && (sortOrder === 'asc' ? <ArrowUp size={14} /> : <ArrowDown size={14} />)}
+                  <th className="px-6 py-3 text-left text-xs font-bold text-blue-700 uppercase tracking-wider">
+                    <button onClick={() => handleSort('TotalBranches')} className="flex items-center gap-1 focus:outline-none">
+                      <HiOutlineLibrary className="inline mr-1" />Branch Count {sortBy === 'TotalBranches' && (sortOrder === 'asc' ? <ArrowUp size={14} /> : <ArrowDown size={14} />)}
                     </button>
                   </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                     <button onClick={() => handleSort('TotalStudents')} className="flex items-center">
-                      Student Count {sortBy === 'TotalStudents' && (sortOrder === 'asc' ? <ArrowUp size={14} /> : <ArrowDown size={14} />)}
+                  <th className="px-6 py-3 text-left text-xs font-bold text-blue-700 uppercase tracking-wider">
+                    <button onClick={() => handleSort('TotalStudents')} className="flex items-center gap-1 focus:outline-none">
+                      <HiOutlineUserGroup className="inline mr-1" />Student Count {sortBy === 'TotalStudents' && (sortOrder === 'asc' ? <ArrowUp size={14} /> : <ArrowDown size={14} />)}
                     </button>
                   </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    <button onClick={() => handleSort('conid')} className="flex items-center">
-                      Country {sortBy === 'conid' && (sortOrder === 'asc' ? <ArrowUp size={14} /> : <ArrowDown size={14} />)}
+                  <th className="px-6 py-3 text-left text-xs font-bold text-blue-700 uppercase tracking-wider">
+                    <button onClick={() => handleSort('conid')} className="flex items-center gap-1 focus:outline-none">
+                      <HiOutlineGlobe className="inline mr-1" />Country {sortBy === 'conid' && (sortOrder === 'asc' ? <ArrowUp size={14} /> : <ArrowDown size={14} />)}
                     </button>
                   </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    <button onClick={() => handleSort('status')} className="flex items-center">
+                  <th className="px-6 py-3 text-left text-xs font-bold text-blue-700 uppercase tracking-wider">
+                    <button onClick={() => handleSort('status')} className="flex items-center gap-1 focus:outline-none">
                       Status {sortBy === 'status' && (sortOrder === 'asc' ? <ArrowUp size={14} /> : <ArrowDown size={14} />)}
                     </button>
                   </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    <button onClick={() => handleSort('archive')} className="flex items-center">
+                  <th className="px-6 py-3 text-left text-xs font-bold text-blue-700 uppercase tracking-wider">
+                    <button onClick={() => handleSort('archive')} className="flex items-center gap-1 focus:outline-none">
                       Archive {sortBy === 'archive' && (sortOrder === 'asc' ? <ArrowUp size={14} /> : <ArrowDown size={14} />)}
                     </button>
                   </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
+                  <th className="px-6 py-3 text-left text-xs font-bold text-blue-700 uppercase tracking-wider rounded-tr-2xl">Actions</th>
                 </tr>
               </thead>
               <tbody className="bg-white divide-y divide-gray-200">
