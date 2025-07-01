@@ -74,21 +74,22 @@ const getEmployeeById = async (req, res) => {
 // Create a new employee
 const createEmployee = async (req, res) => {
     try {
-        // For brevity, insert only a few fields. Expand as needed.
-        const { firstname, lastname, department, designation, employeecode, officeemail, mobileno, status } = req.body;
+        // Insert all fields except id
+        const fields = [
+            'firstname', 'lastname', 'department', 'designation', 'employeecode', 'gender', 'officelandline', 'dateofjoining', 'dateofbirth', 'mailaddress', 'street', 'cityname', 'statename', 'permanentaddress', 'pincode', 'dateofanniversary', 'homephone', 'mobileno', 'officeemail', 'personalemail', 'bloodgroup', 'status', 'archive', 'image', 'idproof', 'cheque1', 'cheque1bankname', 'cheque1date', 'cheque2', 'cheque2bankname', 'cheque2date', 'countryname', 'punchcode', 'isactive', 'resume', 'updatedate', 'isupdated', 'typeofemp', 'IsWaiver', 'roleid', 'prefix', 'scancopy', 'scancopy2', 'isfinal', 'panno', 'isaccept', 'isauthorizedsignatory', 'isfaculty', 'extensionno', 'officialno', 'AccountNo', 'infavouroff', 'IFSCCode', 'bankname', 'bankbranch', 'companyname', 'branch', 'sugession_and_prob', 'showinsalary', 'ismeterchecker', 'iscashpaid', 'isbackDate_leaveallowed', 'islocked', 'dateOfRelieving', 'teamleader', 'byteimage', 'userblockDate', 'fathername', 'mothername', 'ismanualpunchAllowed', 'salary', 'DocUploaded', 'Remindercounter', 'logindate', 'fine', 'Project', 'ViewAttendanceTimeFrom', 'ViewAttendanceHour', 'ViewAttendanceDate', 'ESIStatus', 'PFStatus', 'TDSStatus', 'DeviceId', 'pwd', 'rollid', 'leavetypeid', 'WFHType', 'Joblocation', 'jobbranch', 'BankID', 'AccountId', 'AccountStatus', 'ESINumber', 'PFNumber', 'CostCenter', 'ModeofPayment', 'Pervocrate', 'MaxDay', 'fineperdate', 'Maxfine'
+        ];
         const pool = getDB();
-        await pool.request()
-            .input('firstname', firstname)
-            .input('lastname', lastname)
-            .input('department', department)
-            .input('designation', designation)
-            .input('employeecode', employeecode)
-            .input('officeemail', officeemail)
-            .input('mobileno', mobileno)
-            .input('status', status)
-            .query(`INSERT INTO [beta_ATM_COMM_U88].[dbo].[Atm_M_Employee88]
-                (firstname, lastname, department, designation, employeecode, officeemail, mobileno, status)
-                VALUES (@firstname, @lastname, @department, @designation, @employeecode, @officeemail, @mobileno, @status)`);
+        let request = pool.request();
+        fields.forEach(field => {
+            let value = req.body[field];
+            if (field === 'byteimage') {
+                if (typeof value !== 'string') value = null;
+            }
+            request = request.input(field, value);
+        });
+        await request.query(`INSERT INTO [beta_ATM_COMM_U88].[dbo].[Atm_M_Employee88]
+            (${fields.join(', ')})
+            VALUES (${fields.map(f => '@' + f).join(', ')})`);
         res.status(201).json({
             status: "success",
             message: "Employee created successfully",
@@ -106,21 +107,24 @@ const createEmployee = async (req, res) => {
 // Update employee by ID
 const updateEmployee = async (req, res) => {
     try {
-        const { firstname, lastname, department, designation, employeecode, officeemail, mobileno, status } = req.body;
         const pool = getDB();
-        await pool.request()
-            .input('id', req.params.id)
-            .input('firstname', firstname)
-            .input('lastname', lastname)
-            .input('department', department)
-            .input('designation', designation)
-            .input('employeecode', employeecode)
-            .input('officeemail', officeemail)
-            .input('mobileno', mobileno)
-            .input('status', status)
-            .query(`UPDATE [beta_ATM_COMM_U88].[dbo].[Atm_M_Employee88]
-                SET firstname=@firstname, lastname=@lastname, department=@department, designation=@designation, employeecode=@employeecode, officeemail=@officeemail, mobileno=@mobileno, status=@status
-                WHERE id=@id`);
+        let request = pool.request();
+        request = request.input('id', req.params.id);
+
+        // Only update fields present in req.body (except id and file/image fields)
+        const fileFields = ['image', 'byteimage', 'idproof', 'resume', 'scancopy', 'scancopy2', 'pancard'];
+        const fields = Object.keys(req.body).filter(f => f !== 'id' && !fileFields.includes(f));
+        if (fields.length === 0) {
+            return res.status(400).json({ status: "error", message: "No fields to update", data: null });
+        }
+        const setClause = fields.map(f => `${f}=@${f}`).join(', ');
+        fields.forEach(field => {
+            let value = req.body[field];
+            request = request.input(field, value);
+        });
+        await request.query(`UPDATE [beta_ATM_COMM_U88].[dbo].[Atm_M_Employee88]
+            SET ${setClause}
+            WHERE id=@id`);
         res.status(200).json({
             status: "success",
             message: "Employee updated successfully",
