@@ -267,7 +267,16 @@ const CountriesPage: React.FC = () => {
                     return (
                       <tr key={country.conid} className="hover:bg-blue-50/70 transition-all cursor-pointer group">
                         <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 font-semibold rounded-l-xl">{country.conid}</td>
-                        <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-blue-700">{country.country}</td>
+                        <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-blue-700">
+                          <button
+                            onClick={() => handleCountryClick(country.conid)}
+                            className="hover:underline hover:text-blue-900 focus:outline-none cursor-pointer bg-transparent p-0 m-0"
+                            style={{ fontWeight: 600 }}
+                            title={`View states for ${country.country}`}
+                          >
+                            {country.country}
+                          </button>
+                        </td>
                         <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{stateCount}</td>
                         <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">{country?.TotalBranches}</td>
                         <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">{country?.TotalStudents}</td>
